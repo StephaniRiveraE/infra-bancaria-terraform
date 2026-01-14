@@ -1,0 +1,34 @@
+name: "Terraform Infraestructura"
+
+on:
+  push:
+    branches:
+      - main
+  pull_request: 
+
+jobs:
+  terraform:
+    name: "Terraform Workflow"
+    runs-on: ubuntu-latest
+    env:
+      AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
+      AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+      AWS_REGION: "us-east-2"
+
+    steps:
+      - name: "1. Checkout Código"
+        uses: actions/checkout@v4
+
+      - name: "2. Setup Terraform"
+        uses: hashicorp/setup-terraform@v3
+
+      - name: "3. Terraform Init"
+        run: terraform init
+
+      - name: "4. Terraform Plan"
+        run: terraform plan
+
+      - name: "5. Terraform Apply"
+        if: github.ref == 'refs/heads/main' && github.event_name == 'push'
+      
+        run: terraform apply -auto-approve
