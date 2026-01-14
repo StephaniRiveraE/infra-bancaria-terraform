@@ -4,8 +4,10 @@ on:
   push:
     branches:
       - main
-  pull_request: 
-
+      - desarrollo    
+  pull_request:
+    branches:
+      - main         
 jobs:
   terraform:
     name: "Terraform Workflow"
@@ -26,9 +28,10 @@ jobs:
         run: terraform init
 
       - name: "4. Terraform Plan"
+    
         run: terraform plan
 
       - name: "5. Terraform Apply"
+  
         if: github.ref == 'refs/heads/main' && github.event_name == 'push'
-      
         run: terraform apply -auto-approve
