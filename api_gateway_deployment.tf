@@ -80,9 +80,9 @@ resource "aws_api_gateway_method_settings" "all" {
     # Habilitar métricas de CloudWatch
     metrics_enabled = true
     
-    # Logging
-    logging_level   = "INFO"
-    data_trace_enabled = true
+    # Logging (deshabilitado temporalmente - requiere configurar CloudWatch role ARN en cuenta AWS)
+    logging_level      = "OFF"
+    data_trace_enabled = false
     
     # Throttling global (se puede override por Usage Plan)
     throttling_rate_limit  = 1000
