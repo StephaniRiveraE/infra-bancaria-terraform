@@ -2,7 +2,7 @@ resource "random_password" "db_passwords" {
   for_each         = toset(keys(var.entidades))
   length           = 16
   special          = true
-  override_special = "_%@" 
+  override_special = "!#$%&*+-=?^_"
 }
 
 resource "aws_db_instance" "rds_instances" {
