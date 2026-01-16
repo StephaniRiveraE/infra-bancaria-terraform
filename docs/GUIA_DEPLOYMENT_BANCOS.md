@@ -310,3 +310,4 @@ kubectl logs -f deployment/arcbank-deployment -n arcbank
 ```bash
 kubectl rollout restart deployment/arcbank-deployment -n arcbank
 ```
+test
