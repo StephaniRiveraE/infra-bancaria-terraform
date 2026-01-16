@@ -4,10 +4,11 @@ on:
   push:
     branches:
       - main
-      - desarrollo    
+      - develop    
   pull_request:
     branches:
-      - main         
+      - main
+      - develop         
 jobs:
   terraform:
     name: "Terraform Workflow"
