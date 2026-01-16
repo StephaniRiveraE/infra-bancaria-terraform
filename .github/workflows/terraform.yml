@@ -1,11 +1,6 @@
 name: "Terraform Infraestructura"
 
 on:
-  push:
-    branches:
-      - main
-      - developer
-      - 'feature/**'
   pull_request:
     branches:
       - main
@@ -13,7 +8,6 @@ on:
     types: [opened, synchronize, closed]
 
 jobs:
-  # Job de validación (plan) - se ejecuta siempre
   terraform-plan:
     name: "Terraform Workflow"
     runs-on: ubuntu-latest
@@ -36,7 +30,6 @@ jobs:
       - name: "4. Terraform Plan"
         run: terraform plan
 
-  # Job de deploy - solo cuando se mergea PR a main
   terraform-apply:
     name: "Terraform Apply"
     runs-on: ubuntu-latest
