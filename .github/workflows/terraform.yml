@@ -1,6 +1,11 @@
 name: "Terraform Infraestructura"
 
 on:
+  push:
+    branches:
+      - main
+      - developer
+      - 'feature/**'
   pull_request:
     branches:
       - main
