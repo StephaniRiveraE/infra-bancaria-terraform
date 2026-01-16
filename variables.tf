@@ -70,7 +70,7 @@ variable "rds_storage_gb" {
 variable "rds_engine_version" {
   description = "Versión de PostgreSQL"
   type        = string
-  default     = "15.8"
+  default     = "17.6"
 }
 
 variable "rds_username" {
