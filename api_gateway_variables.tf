@@ -124,16 +124,5 @@ variable "switch_endpoints" {
 }
 
 # -----------------------------------------------------------------------------
-# Tags comunes
+# Tags comunes - Se usa la variable common_tags definida en variables.tf
 # -----------------------------------------------------------------------------
-
-variable "common_tags" {
-  description = "Tags comunes para todos los recursos"
-  type        = map(string)
-  default = {
-    Environment = "production"
-    Project     = "ecosistema-bancario"
-    ManagedBy   = "terraform"
-    Component   = "api-gateway"
-  }
-}
