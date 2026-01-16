@@ -1,12 +1,12 @@
 resource "aws_eip" "nat_eip" {
   domain = "vpc"
-  tags   = { Name = "nat-static-ip" }
+  tags   = merge(var.common_tags, { Name = "nat-static-ip" })
 }
 
 resource "aws_nat_gateway" "nat" {
   allocation_id = aws_eip.nat_eip.id
   subnet_id     = aws_subnet.public_az1.id 
-  tags          = { Name = "main-nat-gateway" }
+  tags          = merge(var.common_tags, { Name = "main-nat-gateway" })
 
   depends_on = [aws_internet_gateway.igw]
 }
@@ -19,7 +19,7 @@ resource "aws_route_table" "public_rt" {
     gateway_id = aws_internet_gateway.igw.id
   }
 
-  tags = { Name = "public-route-table" }
+  tags = merge(var.common_tags, { Name = "public-route-table" })
 }
 
 resource "aws_route_table" "private_rt" {
@@ -30,7 +30,7 @@ resource "aws_route_table" "private_rt" {
     nat_gateway_id = aws_nat_gateway.nat.id
   }
 
-  tags = { Name = "private-route-table" }
+  tags = merge(var.common_tags, { Name = "private-route-table" })
 }
 
 resource "aws_route_table_association" "public_1" {
