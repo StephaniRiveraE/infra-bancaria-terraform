@@ -5,11 +5,14 @@ on:
     branches:
       - main
       - developer
-    types: [opened, synchronize, closed]    
+    types: [opened, synchronize, closed]
+
 jobs:
-  terraform:
+  # Job de validación (plan) - se ejecuta siempre
+  terraform-plan:
     name: "Terraform Workflow"
     runs-on: ubuntu-latest
+    if: github.event.action != 'closed' || github.event.pull_request.merged == false
     env:
       AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
       AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
@@ -26,9 +29,32 @@ jobs:
         run: terraform init
 
       - name: "4. Terraform Plan"
-    
+        run: terraform plan
+
+  # Job de deploy - solo cuando se mergea PR a main
+  terraform-apply:
+    name: "Terraform Apply"
+    runs-on: ubuntu-latest
+    if: github.event.action == 'closed' && github.event.pull_request.merged == true && github.event.pull_request.base.ref == 'main'
+    env:
+      AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
+      AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+      AWS_REGION: "us-east-2"
+
+    steps:
+      - name: "1. Checkout Código (main branch)"
+        uses: actions/checkout@v4
+        with:
+          ref: main
+
+      - name: "2. Setup Terraform"
+        uses: hashicorp/setup-terraform@v3
+
+      - name: "3. Terraform Init"
+        run: terraform init
+
+      - name: "4. Terraform Plan"
         run: terraform plan
 
       - name: "5. Terraform Apply"
-        if: github.event.pull_request.base.ref == 'main' && github.event.pull_request.merged == true
         run: terraform apply -auto-approve
