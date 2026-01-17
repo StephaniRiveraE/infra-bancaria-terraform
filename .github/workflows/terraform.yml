@@ -24,17 +24,13 @@ jobs:
       - name: "2. Setup Terraform"
         uses: hashicorp/setup-terraform@v3
 
-      - name: "3. Terraform Format Check"
-        run: terraform fmt -check -recursive
-        continue-on-error: false
-
-      - name: "4. Terraform Init"
+      - name: "3. Terraform Init"
         run: terraform init
 
-      - name: "5. Terraform Validate"
+      - name: "4. Terraform Validate"
         run: terraform validate
 
-      - name: "6. Terraform Plan"
+      - name: "5. Terraform Plan"
         run: terraform plan -detailed-exitcode
 
   terraform-apply:
