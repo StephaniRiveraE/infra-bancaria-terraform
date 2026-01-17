@@ -5,86 +5,33 @@ on:
     branches:
       - main
       - developer
-    types: [opened, synchronize, closed]
+    types: [opened, synchronize]
 
 jobs:
-  terraform-plan:
-    name: "🔍 Validación Terraform"
+  terraform-validate-and-apply:
+    name: "Validar y Aplicar Terraform"
     runs-on: ubuntu-latest
-    if: github.event.action != 'closed'
+    if: github.base_ref == 'main'
     env:
       AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
       AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
       AWS_REGION: "us-east-2"
 
     steps:
-      - name: "1️⃣ Checkout Código"
+      - name: "Checkout"
         uses: actions/checkout@v4
 
-      - name: "2️⃣ Setup Terraform"
+      - name: "Setup Terraform"
         uses: hashicorp/setup-terraform@v3
 
-      - name: "3️⃣ Terraform Init"
+      - name: "Terraform Init"
         run: terraform init
-        continue-on-error: false
 
-      - name: "4️⃣ Terraform Validate"
+      - name: "Terraform Validate"
         run: terraform validate
-        continue-on-error: false
 
-      - name: "5️⃣ Terraform Plan"
-        id: plan
-        run: terraform plan -input=false -no-color
-        continue-on-error: false
-      
-      - name: "6️⃣ Comentar resultado en PR"
-        uses: actions/github-script@v7
-        if: always()
-        with:
-          script: |
-            const output = `### 📋 Resultado de Terraform Plan
-            
-            #### 🔧 Terraform Initialization \`${{ steps.plan.outcome }}\`
-            #### ✅ Terraform Validation \`${{ steps.plan.outcome }}\`
-            #### 📊 Terraform Plan \`${{ steps.plan.outcome }}\`
-            
-            <details><summary>📄 Ver Plan Completo</summary>
-            
-            \`\`\`terraform
-            ${{ steps.plan.outputs.stdout }}
-            \`\`\`
-            
-            </details>
-            
-            **⚠️ IMPORTANTE:** No se puede mergear este PR si hay errores en Terraform.`;
-            
-            github.rest.issues.createComment({
-              issue_number: context.issue.number,
-              owner: context.repo.owner,
-              repo: context.repo.repo,
-              body: output
-            })
+      - name: "Terraform Plan"
+        run: terraform plan -input=false
 
-  terraform-apply:
-    name: "🚀 Aplicar Cambios en AWS"
-    runs-on: ubuntu-latest
-    if: github.event.action == 'closed' && github.event.pull_request.merged == true && github.event.pull_request.base.ref == 'main'
-    env:
-      AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
-      AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
-      AWS_REGION: "us-east-2"
-
-    steps:
-      - name: "1️⃣ Checkout Main"
-        uses: actions/checkout@v4
-        with:
-          ref: main
-
-      - name: "2️⃣ Setup Terraform"
-        uses: hashicorp/setup-terraform@v3
-
-      - name: "3️⃣ Terraform Init"
-        run: terraform init
-
-      - name: "4️⃣ Terraform Apply"
+      - name: "Terraform Apply"
         run: terraform apply -auto-approve
