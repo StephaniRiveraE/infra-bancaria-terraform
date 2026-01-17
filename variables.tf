@@ -1,9 +1,3 @@
-# ==========================================================
-# VARIABLES CENTRALIZADAS DEL PROYECTO
-# Cambia estos valores aquí y se aplicarán en todos los .tf
-# ==========================================================
-
-# -------------------- CONFIGURACIÓN GENERAL --------------------
 variable "aws_region" {
   description = "Región de AWS donde se despliega la infraestructura"
   type        = string
@@ -21,8 +15,6 @@ variable "environment" {
   type        = string
   default     = "dev"
 }
-
-# -------------------- ENTIDADES BANCARIAS --------------------
 variable "entidades" {
   description = "Lista de entidades bancarias del ecosistema"
   type        = map(string)
@@ -41,7 +33,6 @@ variable "bancos" {
   default     = ["arcbank", "bantec", "nexus", "ecusol"]
 }
 
-# -------------------- VPC / NETWORKING --------------------
 variable "vpc_cidr" {
   description = "CIDR block para la VPC principal"
   type        = string
@@ -54,7 +45,6 @@ variable "availability_zones" {
   default     = ["us-east-2a", "us-east-2b"]
 }
 
-# -------------------- RDS (BASES DE DATOS) --------------------
 variable "rds_instance_class" {
   description = "Tipo de instancia para RDS"
   type        = string
@@ -79,7 +69,6 @@ variable "rds_username" {
   default     = "dbadmin"
 }
 
-# -------------------- TAGS COMUNES --------------------
 variable "common_tags" {
   description = "Tags que se aplican a todos los recursos"
   type        = map(string)
