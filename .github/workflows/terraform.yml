@@ -11,7 +11,7 @@ jobs:
   terraform-plan:
     name: "Terraform Workflow"
     runs-on: ubuntu-latest
-    if: github.event.action != 'closed' || github.event.pull_request.merged == false
+    if: github.event.action != 'closed'
     env:
       AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
       AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
@@ -27,8 +27,11 @@ jobs:
       - name: "3. Terraform Init"
         run: terraform init
 
-      - name: "4. Terraform Plan"
-        run: terraform plan
+      - name: "4. Terraform Validate"
+        run: terraform validate
+
+      - name: "5. Terraform Plan"
+        run: terraform plan -detailed-exitcode
 
   terraform-apply:
     name: "Terraform Apply"
@@ -51,8 +54,5 @@ jobs:
       - name: "3. Terraform Init"
         run: terraform init
 
-      - name: "4. Terraform Plan"
-        run: terraform plan
-
-      - name: "5. Terraform Apply"
+      - name: "4. Terraform Apply"
         run: terraform apply -auto-approve
