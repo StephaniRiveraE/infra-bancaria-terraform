@@ -5,10 +5,10 @@ on:
     branches:
       - main
       - developer
-
+    types: [opened, synchronize, closed]    
 jobs:
-  terraform-validate:
-    name: "Terraform Validate"
+  terraform:
+    name: "Terraform Workflow"
     runs-on: ubuntu-latest
     env:
       AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
@@ -16,18 +16,19 @@ jobs:
       AWS_REGION: "us-east-2"
 
     steps:
-      - name: "Checkout"
+      - name: "1. Checkout Código"
         uses: actions/checkout@v4
 
-      - name: "Setup Terraform"
+      - name: "2. Setup Terraform"
         uses: hashicorp/setup-terraform@v3
 
-      - name: "Terraform Init"
+      - name: "3. Terraform Init"
         run: terraform init
 
-      - name: "Terraform Plan"
+      - name: "4. Terraform Plan"
+    
         run: terraform plan
 
-      - name: "Terraform Apply (solo PRs a main)"
-        if: github.base_ref == 'main'
+      - name: "5. Terraform Apply"
+        if: github.event.pull_request.base.ref == 'main' && github.event.pull_request.merged == true
         run: terraform apply -auto-approve
