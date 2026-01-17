@@ -9,7 +9,7 @@ on:
 
 jobs:
   terraform-plan:
-    name: "Terraform Workflow"
+    name: "🔍 Validación Terraform"
     runs-on: ubuntu-latest
     if: github.event.action != 'closed'
     env:
@@ -18,23 +18,55 @@ jobs:
       AWS_REGION: "us-east-2"
 
     steps:
-      - name: "1. Checkout Código"
+      - name: "1️⃣ Checkout Código"
         uses: actions/checkout@v4
 
-      - name: "2. Setup Terraform"
+      - name: "2️⃣ Setup Terraform"
         uses: hashicorp/setup-terraform@v3
 
-      - name: "3. Terraform Init"
+      - name: "3️⃣ Terraform Init"
         run: terraform init
+        continue-on-error: false
 
-      - name: "4. Terraform Validate"
+      - name: "4️⃣ Terraform Validate"
         run: terraform validate
+        continue-on-error: false
 
-      - name: "5. Terraform Plan"
-        run: terraform plan -detailed-exitcode
+      - name: "5️⃣ Terraform Plan"
+        id: plan
+        run: terraform plan -input=false -no-color
+        continue-on-error: false
+      
+      - name: "6️⃣ Comentar resultado en PR"
+        uses: actions/github-script@v7
+        if: always()
+        with:
+          script: |
+            const output = `### 📋 Resultado de Terraform Plan
+            
+            #### 🔧 Terraform Initialization \`${{ steps.plan.outcome }}\`
+            #### ✅ Terraform Validation \`${{ steps.plan.outcome }}\`
+            #### 📊 Terraform Plan \`${{ steps.plan.outcome }}\`
+            
+            <details><summary>📄 Ver Plan Completo</summary>
+            
+            \`\`\`terraform
+            ${{ steps.plan.outputs.stdout }}
+            \`\`\`
+            
+            </details>
+            
+            **⚠️ IMPORTANTE:** No se puede mergear este PR si hay errores en Terraform.`;
+            
+            github.rest.issues.createComment({
+              issue_number: context.issue.number,
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              body: output
+            })
 
   terraform-apply:
-    name: "Terraform Apply"
+    name: "🚀 Aplicar Cambios en AWS"
     runs-on: ubuntu-latest
     if: github.event.action == 'closed' && github.event.pull_request.merged == true && github.event.pull_request.base.ref == 'main'
     env:
@@ -43,16 +75,16 @@ jobs:
       AWS_REGION: "us-east-2"
 
     steps:
-      - name: "1. Checkout Código (main branch)"
+      - name: "1️⃣ Checkout Main"
         uses: actions/checkout@v4
         with:
           ref: main
 
-      - name: "2. Setup Terraform"
+      - name: "2️⃣ Setup Terraform"
         uses: hashicorp/setup-terraform@v3
 
-      - name: "3. Terraform Init"
+      - name: "3️⃣ Terraform Init"
         run: terraform init
 
-      - name: "4. Terraform Apply"
+      - name: "4️⃣ Terraform Apply"
         run: terraform apply -auto-approve
