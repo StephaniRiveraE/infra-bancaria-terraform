@@ -7,7 +7,6 @@ resource "aws_security_group" "rds_sg" {
     from_port   = 5432
     to_port     = 5432
     protocol    = "tcp"
-    # Permite tráfico de toda tu VPC (donde estará el EKS)
     cidr_blocks = [aws_vpc.vpc_bancaria.cidr_block] 
   }
 

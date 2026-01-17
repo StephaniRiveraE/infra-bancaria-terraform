@@ -8,6 +8,7 @@ resource "random_password" "db_passwords" {
 resource "aws_db_instance" "rds_instances" {
   for_each = var.entidades
 
+  identifier             = "rds-${each.key}"
   allocated_storage      = var.rds_storage_gb
   db_name                = each.value
   engine                 = "postgres"
@@ -29,10 +30,6 @@ resource "aws_db_instance" "rds_instances" {
     Entity = title(each.key)
   })
 }
-
-# ==========================================================
-# 3. EL BAÚL DE SECRETOS (SECRETS MANAGER)
-# ==========================================================
 resource "aws_secretsmanager_secret" "db_secrets" {
   for_each    = var.entidades
   name        = "rds-secret-${each.key}-v1"
@@ -49,7 +46,6 @@ resource "aws_secretsmanager_secret_version" "db_credentials" {
   for_each  = aws_secretsmanager_secret.db_secrets
   secret_id = each.value.id
   
-  # Este es el JSON que tus compañeros leerán con el SDK [cite: 104]
   secret_string = jsonencode({
     username = var.rds_username
     password = random_password.db_passwords[each.key].result
