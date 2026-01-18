@@ -1,7 +1,7 @@
 resource "aws_dynamodb_table" "switch_directorio" {
   name         = "switch-directorio-instituciones"
-  billing_mode = "PAY_PER_REQUEST" # Optimización FinOps: solo pagas por uso
-  hash_key     = "institucion_id"   # ID único del banco (ej: BANTEC-001)
+  billing_mode = "PAY_PER_REQUEST"
+  hash_key     = "institucion_id"
 
   attribute {
     name = "institucion_id"
@@ -19,7 +19,7 @@ resource "aws_dynamodb_table" "sucursales_tables" {
   for_each     = toset(var.bancos)
   
   name         = "${each.key}-sucursales-geo"
-  billing_mode = "PAY_PER_REQUEST" # Sin costo fijo mensual
+  billing_mode = "PAY_PER_REQUEST"
   hash_key     = "sucursal_id"
 
   attribute {

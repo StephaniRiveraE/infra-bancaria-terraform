@@ -1,4 +1,3 @@
-# 1. Configuración de la "Memoria en la Nube" (Backend)
 terraform {
   backend "s3" {
     bucket         = "banca-ecosistema-tfstate-512be32e" 
@@ -27,4 +26,3 @@ resource "aws_dynamodb_table" "terraform_locks" {
     type = "S" 
   }
 }
-

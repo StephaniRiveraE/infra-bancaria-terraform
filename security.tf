@@ -1,6 +1,6 @@
 resource "aws_security_group" "rds_sg" {
   name        = "rds-bancario-sg"
-  vpc_id      = aws_vpc.vpc_bancaria.id # Tu nombre de VPC
+  vpc_id      = aws_vpc.vpc_bancaria.id
   description = "Acceso PostgreSQL exclusivo para la red interna"
 
   ingress {

@@ -1,13 +1,3 @@
-# =============================================================================
-# APIM CIRCUIT BREAKER - Lógica de Bloqueo (Brayan)
-# =============================================================================
-# ERS: Si 5xx consecutivos (5 veces) o latencia > 4s → MS03 Technical Failure
-# Tiempo de enfriamiento: 30 segundos
-# =============================================================================
-
-# -----------------------------------------------------------------------------
-# Variables del Circuit Breaker
-# -----------------------------------------------------------------------------
 variable "apim_circuit_breaker_error_threshold" {
   description = "Errores 5xx para abrir circuit breaker"
   type        = number
@@ -17,18 +7,15 @@ variable "apim_circuit_breaker_error_threshold" {
 variable "apim_circuit_breaker_latency_threshold_ms" {
   description = "Latencia máxima (ms) antes de abrir circuit breaker"
   type        = number
-  default     = 4000 # 4 segundos según ERS
+  default     = 4000
 }
 
 variable "apim_circuit_breaker_cooldown_seconds" {
   description = "Tiempo de enfriamiento (segundos)"
   type        = number
-  default     = 30 # 30 segundos según ERS
+  default     = 30
 }
 
-# -----------------------------------------------------------------------------
-# CloudWatch Alarm - Detección de errores 5xx
-# -----------------------------------------------------------------------------
 resource "aws_cloudwatch_metric_alarm" "backend_5xx_errors" {
   alarm_name          = "${var.environment}-switch-backend-5xx-errors"
   comparison_operator = "GreaterThanOrEqualToThreshold"
@@ -55,9 +42,6 @@ resource "aws_cloudwatch_metric_alarm" "backend_5xx_errors" {
   })
 }
 
-# -----------------------------------------------------------------------------
-# CloudWatch Alarm - Latencia alta (> 4 segundos)
-# -----------------------------------------------------------------------------
 resource "aws_cloudwatch_metric_alarm" "backend_high_latency" {
   alarm_name          = "${var.environment}-switch-backend-high-latency"
   comparison_operator = "GreaterThanThreshold"
@@ -84,9 +68,6 @@ resource "aws_cloudwatch_metric_alarm" "backend_high_latency" {
   })
 }
 
-# -----------------------------------------------------------------------------
-# SNS Topic para alertas del Circuit Breaker
-# -----------------------------------------------------------------------------
 resource "aws_sns_topic" "circuit_breaker_alerts" {
   name = "${var.environment}-switch-circuit-breaker-alerts"
 
@@ -96,9 +77,6 @@ resource "aws_sns_topic" "circuit_breaker_alerts" {
   })
 }
 
-# -----------------------------------------------------------------------------
-# DynamoDB Table - Estado del Circuit Breaker
-# -----------------------------------------------------------------------------
 resource "aws_dynamodb_table" "circuit_breaker_state" {
   name         = "${var.environment}-switch-circuit-breaker-state"
   billing_mode = "PAY_PER_REQUEST"
@@ -120,9 +98,6 @@ resource "aws_dynamodb_table" "circuit_breaker_state" {
   })
 }
 
-# -----------------------------------------------------------------------------
-# Lambda Function - Circuit Breaker Handler
-# -----------------------------------------------------------------------------
 resource "aws_lambda_function" "circuit_breaker_handler" {
   function_name = "${var.environment}-switch-circuit-breaker"
   description   = "Circuit Breaker Handler - Responde MS03 Technical Failure"
@@ -153,9 +128,6 @@ resource "aws_lambda_function" "circuit_breaker_handler" {
   depends_on = [data.archive_file.circuit_breaker_lambda]
 }
 
-# -----------------------------------------------------------------------------
-# Lambda Code (inline)
-# -----------------------------------------------------------------------------
 data "archive_file" "circuit_breaker_lambda" {
   type        = "zip"
   output_path = "${path.module}/circuit_breaker_lambda.zip"
@@ -208,9 +180,6 @@ PYTHON
   }
 }
 
-# -----------------------------------------------------------------------------
-# SNS Subscription y Permission para Lambda
-# -----------------------------------------------------------------------------
 resource "aws_sns_topic_subscription" "circuit_breaker_lambda" {
   topic_arn = aws_sns_topic.circuit_breaker_alerts.arn
   protocol  = "lambda"
@@ -225,9 +194,6 @@ resource "aws_lambda_permission" "circuit_breaker_sns" {
   source_arn    = aws_sns_topic.circuit_breaker_alerts.arn
 }
 
-# -----------------------------------------------------------------------------
-# IAM Role para Lambda
-# -----------------------------------------------------------------------------
 resource "aws_iam_role" "circuit_breaker_lambda_role" {
   name = "${var.environment}-circuit-breaker-lambda-role"
 
@@ -266,9 +232,6 @@ resource "aws_iam_role_policy" "circuit_breaker_lambda_policy" {
   })
 }
 
-# -----------------------------------------------------------------------------
-# Outputs del Circuit Breaker
-# -----------------------------------------------------------------------------
 output "circuit_breaker_sns_topic_arn" {
   description = "ARN del SNS Topic para alertas del Circuit Breaker"
   value       = aws_sns_topic.circuit_breaker_alerts.arn
