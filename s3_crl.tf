@@ -20,6 +20,16 @@ resource "aws_s3_bucket_versioning" "crl_bucket_versioning" {
   }
 }
 
+# ACM PCA requiere que el bucket tenga ownership controls específicos
+resource "aws_s3_bucket_ownership_controls" "crl_bucket_ownership" {
+  bucket = aws_s3_bucket.crl_bucket.id
+
+  rule {
+    object_ownership = "BucketOwnerPreferred"
+  }
+}
+
+# Desbloquear acceso público (requerido por ACM PCA para publicar CRL)
 resource "aws_s3_bucket_public_access_block" "crl_bucket_block" {
   bucket = aws_s3_bucket.crl_bucket.id
 
@@ -27,6 +37,17 @@ resource "aws_s3_bucket_public_access_block" "crl_bucket_block" {
   block_public_policy     = false
   ignore_public_acls      = false
   restrict_public_buckets = false
+}
+
+# ACL del bucket 
+resource "aws_s3_bucket_acl" "crl_bucket_acl" {
+  bucket = aws_s3_bucket.crl_bucket.id
+  acl    = "private"
+
+  depends_on = [
+    aws_s3_bucket_ownership_controls.crl_bucket_ownership,
+    aws_s3_bucket_public_access_block.crl_bucket_block
+  ]
 }
 
 # Política para permitir que ACM PCA publique la CRL
@@ -52,7 +73,17 @@ resource "aws_s3_bucket_policy" "crl_bucket_policy" {
           aws_s3_bucket.crl_bucket.arn,
           "${aws_s3_bucket.crl_bucket.arn}/*"
         ]
+        Condition = {
+          StringEquals = {
+            "aws:SourceAccount" = data.aws_caller_identity.current.account_id
+          }
+        }
       }
     ]
   })
+
+  depends_on = [aws_s3_bucket_public_access_block.crl_bucket_block]
 }
+
+# Data source para obtener account ID
+data "aws_caller_identity" "current" {}
