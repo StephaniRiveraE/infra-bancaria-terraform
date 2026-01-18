@@ -106,14 +106,3 @@ variable "apim_enable_custom_domain" {
   type        = bool
   default     = false
 }
-
-# =============================================================================
-# Variables de Seguridad (Kris)
-# =============================================================================
-
-variable "crl_s3_bucket" {
-  description = "Nombre del bucket S3 donde se publicará la CRL de la CA"
-  type        = string
-  default     = "apim-crl-bucket"
-}
-
