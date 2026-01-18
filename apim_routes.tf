@@ -105,6 +105,11 @@ resource "aws_apigatewayv2_integration" "backend_transfers" {
   request_parameters = {
     "overwrite:path" = "/api/v2/switch/transfers"
   }
+
+  depends_on = [
+    aws_lb_listener.apim_backend_listener,
+    aws_apigatewayv2_vpc_link.apim_vpc_link
+  ]
 }
 
 resource "aws_apigatewayv2_route" "transfers_post" {
@@ -130,6 +135,11 @@ resource "aws_apigatewayv2_integration" "backend_transfers_get" {
   request_parameters = {
     "overwrite:path" = "/api/v2/switch/transfers/$request.path.instructionId"
   }
+
+  depends_on = [
+    aws_lb_listener.apim_backend_listener,
+    aws_apigatewayv2_vpc_link.apim_vpc_link
+  ]
 }
 
 resource "aws_apigatewayv2_route" "transfers_get" {
@@ -155,6 +165,11 @@ resource "aws_apigatewayv2_integration" "backend_transfers_return" {
   request_parameters = {
     "overwrite:path" = "/api/v2/switch/transfers/return"
   }
+
+  depends_on = [
+    aws_lb_listener.apim_backend_listener,
+    aws_apigatewayv2_vpc_link.apim_vpc_link
+  ]
 }
 
 resource "aws_apigatewayv2_route" "transfers_return" {
@@ -180,6 +195,11 @@ resource "aws_apigatewayv2_integration" "backend_funding" {
   request_parameters = {
     "overwrite:path" = "/funding/$request.path.bankId"
   }
+
+  depends_on = [
+    aws_lb_listener.apim_backend_listener,
+    aws_apigatewayv2_vpc_link.apim_vpc_link
+  ]
 }
 
 resource "aws_apigatewayv2_route" "funding_get" {

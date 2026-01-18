@@ -68,7 +68,11 @@ aws_apigatewayv2_integration.backend_transfers_return
 aws_apigatewayv2_integration.backend_funding
   - connection_type: VPC_LINK
   - integration_uri: aws_lb_listener.apim_backend_listener.arn
+  - depends_on: [aws_lb_listener.apim_backend_listener, aws_apigatewayv2_vpc_link.apim_vpc_link]
 ```
+
+**IMPORTANTE:** Las integraciones VPC_LINK requieren `depends_on` explícito para asegurar
+que el ALB listener y el VPC Link estén completamente creados antes de la integración.
 
 ### 4.3 Circuit Breaker
 
