@@ -101,6 +101,12 @@ variable "apim_domain_name" {
   default     = "api.switch-transaccional.com"
 }
 
+variable "apim_enable_custom_domain" {
+  description = "Habilitar Custom Domain con mTLS (requiere dominio real y validación DNS)"
+  type        = bool
+  default     = false
+}
+
 # =============================================================================
 # Variables de Seguridad (Kris)
 # =============================================================================

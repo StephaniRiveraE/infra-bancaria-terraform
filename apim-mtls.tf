@@ -2,6 +2,10 @@
 # APIM - Infraestructura para mTLS (Mutual TLS)
 # Responsable: Christian (infraestructura) / Kris (configuración de certificados)
 # Requisito: RNF-SEC-01 - mTLS obligatorio
+# 
+# NOTA: El Custom Domain con mTLS está DESHABILITADO hasta tener un dominio real.
+#       Para habilitarlo: configurar var.apim_enable_custom_domain = true
+#       y validar el certificado ACM via DNS.
 # =============================================================================
 
 # -----------------------------------------------------------------------------
@@ -59,9 +63,10 @@ resource "aws_s3_object" "truststore_placeholder" {
 }
 
 # -----------------------------------------------------------------------------
-# ACM Certificate para Custom Domain (mTLS requiere dominio personalizado)
+# ACM Certificate para Custom Domain (SOLO se crea si está habilitado)
 # -----------------------------------------------------------------------------
 resource "aws_acm_certificate" "apim_cert" {
+  count             = var.apim_enable_custom_domain ? 1 : 0
   domain_name       = var.apim_domain_name
   validation_method = "DNS"
 
@@ -76,14 +81,15 @@ resource "aws_acm_certificate" "apim_cert" {
 }
 
 # -----------------------------------------------------------------------------
-# Custom Domain con mTLS habilitado
-# CRÍTICO: Sin esto, Kris NO puede configurar validación de certificados de bancos
+# Custom Domain con mTLS habilitado (SOLO se crea si está habilitado y cert validado)
+# CRÍTICO: Requiere dominio real y validación DNS del certificado
 # -----------------------------------------------------------------------------
 resource "aws_apigatewayv2_domain_name" "apim_custom_domain" {
+  count       = var.apim_enable_custom_domain ? 1 : 0
   domain_name = var.apim_domain_name
 
   domain_name_configuration {
-    certificate_arn = aws_acm_certificate.apim_cert.arn
+    certificate_arn = aws_acm_certificate.apim_cert[0].arn
     endpoint_type   = "REGIONAL"
     security_policy = "TLS_1_2"
   }
@@ -106,8 +112,9 @@ resource "aws_apigatewayv2_domain_name" "apim_custom_domain" {
 # API Mapping - Conecta el Custom Domain con el API Gateway
 # -----------------------------------------------------------------------------
 resource "aws_apigatewayv2_api_mapping" "apim_mapping" {
+  count       = var.apim_enable_custom_domain ? 1 : 0
   api_id      = aws_apigatewayv2_api.apim_gateway.id
-  domain_name = aws_apigatewayv2_domain_name.apim_custom_domain.id
+  domain_name = aws_apigatewayv2_domain_name.apim_custom_domain[0].id
   stage       = aws_apigatewayv2_stage.apim_stage.id
 }
 
@@ -116,13 +123,13 @@ resource "aws_apigatewayv2_api_mapping" "apim_mapping" {
 # -----------------------------------------------------------------------------
 
 output "apim_custom_domain_name" {
-  description = "Custom domain para mTLS"
-  value       = aws_apigatewayv2_domain_name.apim_custom_domain.domain_name
+  description = "Custom domain para mTLS (vacío si no está habilitado)"
+  value       = var.apim_enable_custom_domain ? aws_apigatewayv2_domain_name.apim_custom_domain[0].domain_name : "DISABLED - Set apim_enable_custom_domain=true"
 }
 
 output "apim_custom_domain_target" {
   description = "Target del custom domain (para configurar DNS/Route53)"
-  value       = aws_apigatewayv2_domain_name.apim_custom_domain.domain_name_configuration[0].target_domain_name
+  value       = var.apim_enable_custom_domain ? aws_apigatewayv2_domain_name.apim_custom_domain[0].domain_name_configuration[0].target_domain_name : "DISABLED"
 }
 
 output "apim_truststore_bucket" {
@@ -136,11 +143,11 @@ output "apim_truststore_uri" {
 }
 
 output "apim_certificate_arn" {
-  description = "ARN del certificado ACM"
-  value       = aws_acm_certificate.apim_cert.arn
+  description = "ARN del certificado ACM (vacío si no está habilitado)"
+  value       = var.apim_enable_custom_domain ? aws_acm_certificate.apim_cert[0].arn : "DISABLED"
 }
 
 output "apim_certificate_validation_options" {
   description = "Opciones de validación DNS del certificado (crear registro CNAME)"
-  value       = aws_acm_certificate.apim_cert.domain_validation_options
+  value       = var.apim_enable_custom_domain ? aws_acm_certificate.apim_cert[0].domain_validation_options : []
 }
