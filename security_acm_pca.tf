@@ -1,3 +1,9 @@
+# =============================================================================
+# ACM Private CA para mTLS
+# Este recurso crea una CA privada para firmar certificados de clientes
+# NOTA: ACM PCA tiene costo ($400/mes por CA activa)
+# =============================================================================
+
 resource "aws_acmpca_certificate_authority" "apim_ca" {
   type = "ROOT"
 
@@ -24,8 +30,29 @@ resource "aws_acmpca_certificate_authority" "apim_ca" {
   tags = var.common_tags
 }
 
-resource "aws_acmpca_certificate_authority_certificate" "apim_ca_cert" {
-  certificate_authority_arn = aws_acmpca_certificate_authority.apim_ca.arn
-  certificate               = file("${path.module}/ca_cert.pem")
+# Certificado raíz auto-firmado para la CA
+resource "aws_acmpca_certificate" "apim_ca_root_cert" {
+  certificate_authority_arn   = aws_acmpca_certificate_authority.apim_ca.arn
+  certificate_signing_request = aws_acmpca_certificate_authority.apim_ca.certificate_signing_request
+  signing_algorithm           = "SHA256WITHRSA"
+
+  template_arn = "arn:aws:acm-pca:::template/RootCACertificate/V1"
+
+  validity {
+    type  = "YEARS"
+    value = 10
+  }
 }
 
+# Asociar el certificado raíz con la CA
+resource "aws_acmpca_certificate_authority_certificate" "apim_ca_cert" {
+  certificate_authority_arn = aws_acmpca_certificate_authority.apim_ca.arn
+  certificate               = aws_acmpca_certificate.apim_ca_root_cert.certificate
+  certificate_chain         = aws_acmpca_certificate.apim_ca_root_cert.certificate_chain
+}
+
+# Output del ARN de la CA
+output "apim_ca_arn" {
+  description = "ARN de la CA privada para firmar certificados de clientes"
+  value       = aws_acmpca_certificate_authority.apim_ca.arn
+}
