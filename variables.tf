@@ -95,9 +95,24 @@ variable "apim_alarm_sns_topic_arn" {
   default     = ""
 }
 
+variable "apim_domain_name" {
+  description = "Dominio personalizado para el API Gateway (requerido para mTLS)"
+  type        = string
+  default     = "api.switch-transaccional.com"
+}
+
+variable "apim_integration_timeout_ms" {
+  description = "Timeout de integración en milisegundos (ERS: 3-5 segundos)"
+  type        = number
+  default     = 5000
+}
+
+# =============================================================================
+# Variables de Seguridad (Kris)
+# =============================================================================
+
 variable "crl_s3_bucket" {
   description = "Nombre del bucket S3 donde se publicará la CRL de la CA"
   type        = string
   default     = "apim-crl-bucket"
 }
-
