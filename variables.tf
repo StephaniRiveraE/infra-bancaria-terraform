@@ -78,3 +78,19 @@ variable "common_tags" {
     Environment = "dev"
   }
 }
+
+# =============================================================================
+# Variables del APIM (Christian)
+# =============================================================================
+
+variable "apim_log_retention_days" {
+  description = "Días de retención para logs de CloudWatch del APIM"
+  type        = number
+  default     = 30
+}
+
+variable "apim_alarm_sns_topic_arn" {
+  description = "ARN del SNS Topic para enviar alarmas del APIM (opcional)"
+  type        = string
+  default     = ""
+}
