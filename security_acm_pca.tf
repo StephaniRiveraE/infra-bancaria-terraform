@@ -23,11 +23,7 @@ resource "aws_acmpca_certificate_authority" "apim_ca" {
 }
 
 resource "aws_acmpca_certificate_authority_certificate" "apim_ca_cert" {
-  certificate_authority_arn   = aws_acmpca_certificate_authority.apim_ca.arn
-  certificate_signing_request = aws_acmpca_certificate_authority.apim_ca.certificate_signing_request
-  signing_algorithm          = "SHA256WITHRSA"
-  validity {
-    type  = "YEARS"
-    value = 10
-  }
+  certificate_authority_arn = aws_acmpca_certificate_authority.apim_ca.arn
+  certificate               = file("${path.module}/ca_cert.pem")
 }
+
