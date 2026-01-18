@@ -22,6 +22,15 @@ resource "aws_security_group" "apim_vpc_link_sg" {
     description = "Conexion al backend en subredes privadas"
   }
 
+  # Tráfico hacia el ALB (puerto 80)
+  egress {
+    from_port   = 80
+    to_port     = 80
+    protocol    = "tcp"
+    cidr_blocks = [aws_vpc.vpc_bancaria.cidr_block]
+    description = "Conexion al ALB del backend"
+  }
+
   # Tráfico HTTPS saliente (para integraciones)
   egress {
     from_port   = 443
@@ -45,13 +54,22 @@ resource "aws_security_group" "apim_backend_sg" {
   vpc_id      = aws_vpc.vpc_bancaria.id
   description = "Security group para backend del APIM - permite trafico desde VPC Link"
 
-  # Tráfico desde VPC Link hacia el backend
+  # Tráfico desde VPC Link hacia el backend (puerto 8080)
   ingress {
     from_port       = 8080
     to_port         = 8080
     protocol        = "tcp"
     security_groups = [aws_security_group.apim_vpc_link_sg.id]
     description     = "Trafico desde VPC Link del APIM"
+  }
+
+  # Tráfico desde VPC Link hacia el ALB (puerto 80)
+  ingress {
+    from_port       = 80
+    to_port         = 80
+    protocol        = "tcp"
+    security_groups = [aws_security_group.apim_vpc_link_sg.id]
+    description     = "Trafico HTTP desde VPC Link al ALB"
   }
 
   egress {
