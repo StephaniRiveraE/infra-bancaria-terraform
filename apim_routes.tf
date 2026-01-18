@@ -1,17 +1,3 @@
-# =============================================================================
-# APIM ROUTES - Definición de Rutas del Switch (Brayan)
-# =============================================================================
-# Usa los recursos creados por Christian en apim.tf:
-# - aws_apigatewayv2_api.apim_gateway
-# - aws_apigatewayv2_vpc_link.apim_vpc_link
-# - aws_apigatewayv2_stage.apim_stage (ya tiene throttling 50-100 TPS)
-#
-# NOTA: VPC Link requiere un ALB/NLB como target, no URL HTTP directa
-# =============================================================================
-
-# -----------------------------------------------------------------------------
-# Variables para Backend
-# -----------------------------------------------------------------------------
 variable "apim_backend_port" {
   description = "Puerto del backend"
   type        = number
@@ -21,12 +7,9 @@ variable "apim_backend_port" {
 variable "apim_integration_timeout_ms" {
   description = "Timeout de integración con backend (ms)"
   type        = number
-  default     = 29000 # 29 segundos (máximo API Gateway)
+  default     = 29000
 }
 
-# -----------------------------------------------------------------------------
-# Application Load Balancer para Backend del Switch
-# -----------------------------------------------------------------------------
 resource "aws_lb" "apim_backend_alb" {
   name               = "apim-backend-alb"
   internal           = true
@@ -44,7 +27,6 @@ resource "aws_lb" "apim_backend_alb" {
   })
 }
 
-# Target Group para el backend (puerto 8080)
 resource "aws_lb_target_group" "apim_backend_tg" {
   name        = "apim-backend-tg"
   port        = var.apim_backend_port
@@ -70,7 +52,6 @@ resource "aws_lb_target_group" "apim_backend_tg" {
   })
 }
 
-# Listener del ALB (HTTP en puerto 80)
 resource "aws_lb_listener" "apim_backend_listener" {
   load_balancer_arn = aws_lb.apim_backend_alb.arn
   port              = 80
@@ -87,10 +68,6 @@ resource "aws_lb_listener" "apim_backend_listener" {
   })
 }
 
-# -----------------------------------------------------------------------------
-# Integración Backend - POST /api/v2/switch/transfers (RF-01)
-# Usa el ARN del listener del ALB
-# -----------------------------------------------------------------------------
 resource "aws_apigatewayv2_integration" "backend_transfers" {
   api_id           = aws_apigatewayv2_api.apim_gateway.id
   connection_type  = "VPC_LINK"
@@ -118,9 +95,6 @@ resource "aws_apigatewayv2_route" "transfers_post" {
   target    = "integrations/${aws_apigatewayv2_integration.backend_transfers.id}"
 }
 
-# -----------------------------------------------------------------------------
-# Integración Backend - GET /api/v2/switch/transfers/{instructionId} (RF-04)
-# -----------------------------------------------------------------------------
 resource "aws_apigatewayv2_integration" "backend_transfers_get" {
   api_id           = aws_apigatewayv2_api.apim_gateway.id
   connection_type  = "VPC_LINK"
@@ -148,9 +122,6 @@ resource "aws_apigatewayv2_route" "transfers_get" {
   target    = "integrations/${aws_apigatewayv2_integration.backend_transfers_get.id}"
 }
 
-# -----------------------------------------------------------------------------
-# Integración Backend - POST /api/v2/switch/transfers/return (RF-07)
-# -----------------------------------------------------------------------------
 resource "aws_apigatewayv2_integration" "backend_transfers_return" {
   api_id           = aws_apigatewayv2_api.apim_gateway.id
   connection_type  = "VPC_LINK"
@@ -178,9 +149,6 @@ resource "aws_apigatewayv2_route" "transfers_return" {
   target    = "integrations/${aws_apigatewayv2_integration.backend_transfers_return.id}"
 }
 
-# -----------------------------------------------------------------------------
-# Integración Backend - GET /funding/{bankId} (RF-01.1)
-# -----------------------------------------------------------------------------
 resource "aws_apigatewayv2_integration" "backend_funding" {
   api_id           = aws_apigatewayv2_api.apim_gateway.id
   connection_type  = "VPC_LINK"
@@ -208,9 +176,6 @@ resource "aws_apigatewayv2_route" "funding_get" {
   target    = "integrations/${aws_apigatewayv2_integration.backend_funding.id}"
 }
 
-# -----------------------------------------------------------------------------
-# Outputs
-# -----------------------------------------------------------------------------
 output "apim_backend_alb_arn" {
   description = "ARN del ALB del backend"
   value       = aws_lb.apim_backend_alb.arn

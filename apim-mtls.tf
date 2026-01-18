@@ -1,17 +1,3 @@
-# =============================================================================
-# APIM - Infraestructura para mTLS (Mutual TLS)
-# Responsable: Christian (infraestructura) / Kris (configuración de certificados)
-# Requisito: RNF-SEC-01 - mTLS obligatorio
-# 
-# NOTA: El Custom Domain con mTLS está DESHABILITADO hasta tener un dominio real.
-#       Para habilitarlo: configurar var.apim_enable_custom_domain = true
-#       y validar el certificado ACM via DNS.
-# =============================================================================
-
-# -----------------------------------------------------------------------------
-# S3 Bucket para Truststore (Certificados CA de los Bancos)
-# Kris subirá aquí el archivo truststore.pem con los certificados de los bancos
-# -----------------------------------------------------------------------------
 resource "aws_s3_bucket" "mtls_truststore" {
   bucket = "mtls-truststore-${lower(var.project_name)}-${var.environment}"
 
@@ -39,7 +25,6 @@ resource "aws_s3_bucket_server_side_encryption_configuration" "mtls_truststore_e
   }
 }
 
-# Bloquear acceso público al truststore
 resource "aws_s3_bucket_public_access_block" "mtls_truststore_block" {
   bucket = aws_s3_bucket.mtls_truststore.id
 
@@ -49,8 +34,6 @@ resource "aws_s3_bucket_public_access_block" "mtls_truststore_block" {
   restrict_public_buckets = true
 }
 
-# Certificado dummy para inicializar truststore (Kris lo reemplazará con los certs reales)
-# NOTA: Este archivo tiene formato PEM válido para que AWS no rechace el despliegue inicial
 resource "aws_s3_object" "truststore_placeholder" {
   bucket = aws_s3_bucket.mtls_truststore.id
   key    = "truststore.pem"
@@ -62,9 +45,6 @@ resource "aws_s3_object" "truststore_placeholder" {
   })
 }
 
-# -----------------------------------------------------------------------------
-# ACM Certificate para Custom Domain (SOLO se crea si está habilitado)
-# -----------------------------------------------------------------------------
 resource "aws_acm_certificate" "apim_cert" {
   count             = var.apim_enable_custom_domain ? 1 : 0
   domain_name       = var.apim_domain_name
@@ -80,10 +60,6 @@ resource "aws_acm_certificate" "apim_cert" {
   })
 }
 
-# -----------------------------------------------------------------------------
-# Custom Domain con mTLS habilitado (SOLO se crea si está habilitado y cert validado)
-# CRÍTICO: Requiere dominio real y validación DNS del certificado
-# -----------------------------------------------------------------------------
 resource "aws_apigatewayv2_domain_name" "apim_custom_domain" {
   count       = var.apim_enable_custom_domain ? 1 : 0
   domain_name = var.apim_domain_name
@@ -94,7 +70,6 @@ resource "aws_apigatewayv2_domain_name" "apim_custom_domain" {
     security_policy = "TLS_1_2"
   }
 
-  # Configuración mTLS - Kris configurará el truststore con los certificados de los bancos
   mutual_tls_authentication {
     truststore_uri     = "s3://${aws_s3_bucket.mtls_truststore.id}/${aws_s3_object.truststore_placeholder.key}"
     truststore_version = aws_s3_object.truststore_placeholder.version_id
@@ -108,19 +83,12 @@ resource "aws_apigatewayv2_domain_name" "apim_custom_domain" {
   depends_on = [aws_acm_certificate.apim_cert]
 }
 
-# -----------------------------------------------------------------------------
-# API Mapping - Conecta el Custom Domain con el API Gateway
-# -----------------------------------------------------------------------------
 resource "aws_apigatewayv2_api_mapping" "apim_mapping" {
   count       = var.apim_enable_custom_domain ? 1 : 0
   api_id      = aws_apigatewayv2_api.apim_gateway.id
   domain_name = aws_apigatewayv2_domain_name.apim_custom_domain[0].id
   stage       = aws_apigatewayv2_stage.apim_stage.id
 }
-
-# -----------------------------------------------------------------------------
-# Outputs para mTLS
-# -----------------------------------------------------------------------------
 
 output "apim_custom_domain_name" {
   description = "Custom domain para mTLS (vacío si no está habilitado)"

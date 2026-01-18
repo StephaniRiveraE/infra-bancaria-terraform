@@ -1,13 +1,3 @@
-# =============================================================================
-# APIM - CloudWatch Logs y Observabilidad
-# Responsable: Christian
-# Componentes: Log Groups, Métricas, Alarmas, Dashboard
-# =============================================================================
-
-# -----------------------------------------------------------------------------
-# CloudWatch Log Group para API Gateway Access Logs
-# Incluye Trace-ID (requestId) para 100% de las transacciones
-# -----------------------------------------------------------------------------
 resource "aws_cloudwatch_log_group" "apim_access_logs" {
   name              = "/aws/apigateway/apim-switch-${var.environment}"
   retention_in_days = var.apim_log_retention_days
@@ -18,11 +8,6 @@ resource "aws_cloudwatch_log_group" "apim_access_logs" {
   })
 }
 
-# -----------------------------------------------------------------------------
-# Métricas y Alarmas para SLA 99.99%
-# -----------------------------------------------------------------------------
-
-# Alarma de latencia alta (> 200ms overhead del APIM - requisito ERS)
 resource "aws_cloudwatch_metric_alarm" "apim_latency_alarm" {
   alarm_name          = "apim-high-latency-${var.environment}"
   comparison_operator = "GreaterThanThreshold"
@@ -47,7 +32,6 @@ resource "aws_cloudwatch_metric_alarm" "apim_latency_alarm" {
   })
 }
 
-# Alarma de errores 5xx (disponibilidad)
 resource "aws_cloudwatch_metric_alarm" "apim_5xx_alarm" {
   alarm_name          = "apim-5xx-errors-${var.environment}"
   comparison_operator = "GreaterThanThreshold"
@@ -72,7 +56,6 @@ resource "aws_cloudwatch_metric_alarm" "apim_5xx_alarm" {
   })
 }
 
-# Alarma de errores 4xx elevados (posible ataque o problema de clientes)
 resource "aws_cloudwatch_metric_alarm" "apim_4xx_alarm" {
   alarm_name          = "apim-4xx-errors-${var.environment}"
   comparison_operator = "GreaterThanThreshold"
@@ -97,9 +80,6 @@ resource "aws_cloudwatch_metric_alarm" "apim_4xx_alarm" {
   })
 }
 
-# -----------------------------------------------------------------------------
-# Dashboard de CloudWatch para monitoreo del APIM
-# -----------------------------------------------------------------------------
 resource "aws_cloudwatch_dashboard" "apim_dashboard" {
   dashboard_name = "APIM-Switch-${var.environment}"
 
