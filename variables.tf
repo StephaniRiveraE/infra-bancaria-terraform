@@ -94,3 +94,10 @@ variable "apim_alarm_sns_topic_arn" {
   type        = string
   default     = ""
 }
+
+variable "crl_s3_bucket" {
+  description = "Nombre del bucket S3 donde se publicará la CRL de la CA"
+  type        = string
+  default     = "apim-crl-bucket"
+}
+
