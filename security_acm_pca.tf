@@ -13,11 +13,13 @@ resource "aws_acmpca_certificate_authority" "apim_ca" {
 
   revocation_configuration {
     crl_configuration {
-      enabled           = true
+      enabled            = true
       expiration_in_days = 365
-      s3_bucket_name    = var.crl_s3_bucket
+      s3_bucket_name     = aws_s3_bucket.crl_bucket.id
     }
   }
+
+  depends_on = [aws_s3_bucket_policy.crl_bucket_policy]
 
   tags = var.common_tags
 }
