@@ -5,15 +5,17 @@
 # - aws_apigatewayv2_api.apim_gateway
 # - aws_apigatewayv2_vpc_link.apim_vpc_link
 # - aws_apigatewayv2_stage.apim_stage (ya tiene throttling 50-100 TPS)
+#
+# NOTA: VPC Link requiere un ALB/NLB como target, no URL HTTP directa
 # =============================================================================
 
 # -----------------------------------------------------------------------------
-# Variables para Backend URL
+# Variables para Backend
 # -----------------------------------------------------------------------------
-variable "apim_backend_base_url" {
-  description = "URL base del backend interno (Core del Switch)"
-  type        = string
-  default     = "http://backend.internal:8080"
+variable "apim_backend_port" {
+  description = "Puerto del backend"
+  type        = number
+  default     = 8080
 }
 
 variable "apim_integration_timeout_ms" {
@@ -23,18 +25,91 @@ variable "apim_integration_timeout_ms" {
 }
 
 # -----------------------------------------------------------------------------
+# Application Load Balancer para Backend del Switch
+# -----------------------------------------------------------------------------
+resource "aws_lb" "apim_backend_alb" {
+  name               = "apim-backend-alb"
+  internal           = true
+  load_balancer_type = "application"
+  security_groups    = [aws_security_group.apim_backend_sg.id]
+  
+  subnets = [
+    aws_subnet.private_az1.id,
+    aws_subnet.private_az2.id
+  ]
+
+  tags = merge(var.common_tags, {
+    Name      = "alb-apim-backend"
+    Component = "APIM"
+  })
+}
+
+# Target Group para el backend (puerto 8080)
+resource "aws_lb_target_group" "apim_backend_tg" {
+  name        = "apim-backend-tg"
+  port        = var.apim_backend_port
+  protocol    = "HTTP"
+  vpc_id      = aws_vpc.vpc_bancaria.id
+  target_type = "ip"
+
+  health_check {
+    enabled             = true
+    healthy_threshold   = 2
+    interval            = 30
+    matcher             = "200-299"
+    path                = "/health"
+    port                = "traffic-port"
+    protocol            = "HTTP"
+    timeout             = 5
+    unhealthy_threshold = 2
+  }
+
+  tags = merge(var.common_tags, {
+    Name      = "tg-apim-backend"
+    Component = "APIM"
+  })
+}
+
+# Listener del ALB (HTTP en puerto 80)
+resource "aws_lb_listener" "apim_backend_listener" {
+  load_balancer_arn = aws_lb.apim_backend_alb.arn
+  port              = 80
+  protocol          = "HTTP"
+
+  default_action {
+    type             = "forward"
+    target_group_arn = aws_lb_target_group.apim_backend_tg.arn
+  }
+
+  tags = merge(var.common_tags, {
+    Name      = "listener-apim-backend"
+    Component = "APIM"
+  })
+}
+
+# -----------------------------------------------------------------------------
 # Integración Backend - POST /api/v2/switch/transfers (RF-01)
+# Usa el ARN del listener del ALB
 # -----------------------------------------------------------------------------
 resource "aws_apigatewayv2_integration" "backend_transfers" {
   api_id           = aws_apigatewayv2_api.apim_gateway.id
   connection_type  = "VPC_LINK"
   connection_id    = aws_apigatewayv2_vpc_link.apim_vpc_link.id
   integration_type = "HTTP_PROXY"
-  integration_uri  = "${var.apim_backend_base_url}/api/v2/switch/transfers"
+  integration_uri  = aws_lb_listener.apim_backend_listener.arn
   
   integration_method     = "POST"
   payload_format_version = "1.0"
   timeout_milliseconds   = var.apim_integration_timeout_ms
+
+  request_parameters = {
+    "overwrite:path" = "/api/v2/switch/transfers"
+  }
+
+  depends_on = [
+    aws_lb_listener.apim_backend_listener,
+    aws_apigatewayv2_vpc_link.apim_vpc_link
+  ]
 }
 
 resource "aws_apigatewayv2_route" "transfers_post" {
@@ -51,11 +126,20 @@ resource "aws_apigatewayv2_integration" "backend_transfers_get" {
   connection_type  = "VPC_LINK"
   connection_id    = aws_apigatewayv2_vpc_link.apim_vpc_link.id
   integration_type = "HTTP_PROXY"
-  integration_uri  = "${var.apim_backend_base_url}/api/v2/switch/transfers/{instructionId}"
+  integration_uri  = aws_lb_listener.apim_backend_listener.arn
   
   integration_method     = "GET"
   payload_format_version = "1.0"
   timeout_milliseconds   = var.apim_integration_timeout_ms
+
+  request_parameters = {
+    "overwrite:path" = "/api/v2/switch/transfers/$request.path.instructionId"
+  }
+
+  depends_on = [
+    aws_lb_listener.apim_backend_listener,
+    aws_apigatewayv2_vpc_link.apim_vpc_link
+  ]
 }
 
 resource "aws_apigatewayv2_route" "transfers_get" {
@@ -72,11 +156,20 @@ resource "aws_apigatewayv2_integration" "backend_transfers_return" {
   connection_type  = "VPC_LINK"
   connection_id    = aws_apigatewayv2_vpc_link.apim_vpc_link.id
   integration_type = "HTTP_PROXY"
-  integration_uri  = "${var.apim_backend_base_url}/api/v2/switch/transfers/return"
+  integration_uri  = aws_lb_listener.apim_backend_listener.arn
   
   integration_method     = "POST"
   payload_format_version = "1.0"
   timeout_milliseconds   = var.apim_integration_timeout_ms
+
+  request_parameters = {
+    "overwrite:path" = "/api/v2/switch/transfers/return"
+  }
+
+  depends_on = [
+    aws_lb_listener.apim_backend_listener,
+    aws_apigatewayv2_vpc_link.apim_vpc_link
+  ]
 }
 
 resource "aws_apigatewayv2_route" "transfers_return" {
@@ -93,11 +186,20 @@ resource "aws_apigatewayv2_integration" "backend_funding" {
   connection_type  = "VPC_LINK"
   connection_id    = aws_apigatewayv2_vpc_link.apim_vpc_link.id
   integration_type = "HTTP_PROXY"
-  integration_uri  = "${var.apim_backend_base_url}/funding/{bankId}"
+  integration_uri  = aws_lb_listener.apim_backend_listener.arn
   
   integration_method     = "GET"
   payload_format_version = "1.0"
   timeout_milliseconds   = var.apim_integration_timeout_ms
+
+  request_parameters = {
+    "overwrite:path" = "/funding/$request.path.bankId"
+  }
+
+  depends_on = [
+    aws_lb_listener.apim_backend_listener,
+    aws_apigatewayv2_vpc_link.apim_vpc_link
+  ]
 }
 
 resource "aws_apigatewayv2_route" "funding_get" {
@@ -107,8 +209,23 @@ resource "aws_apigatewayv2_route" "funding_get" {
 }
 
 # -----------------------------------------------------------------------------
-# Outputs de Rutas
+# Outputs
 # -----------------------------------------------------------------------------
+output "apim_backend_alb_arn" {
+  description = "ARN del ALB del backend"
+  value       = aws_lb.apim_backend_alb.arn
+}
+
+output "apim_backend_alb_dns" {
+  description = "DNS del ALB del backend"
+  value       = aws_lb.apim_backend_alb.dns_name
+}
+
+output "apim_backend_target_group_arn" {
+  description = "ARN del Target Group (para registrar instancias del backend)"
+  value       = aws_lb_target_group.apim_backend_tg.arn
+}
+
 output "apim_route_transfers_post" {
   description = "Route ID - POST /api/v2/switch/transfers"
   value       = aws_apigatewayv2_route.transfers_post.id
