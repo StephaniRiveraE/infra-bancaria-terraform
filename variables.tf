@@ -15,6 +15,7 @@ variable "environment" {
   type        = string
   default     = "dev"
 }
+
 variable "entidades" {
   description = "Lista de entidades bancarias del ecosistema"
   type        = map(string)
@@ -78,10 +79,6 @@ variable "common_tags" {
     Environment = "dev"
   }
 }
-
-# =============================================================================
-# Variables del APIM (Christian)
-# =============================================================================
 
 variable "apim_log_retention_days" {
   description = "Días de retención para logs de CloudWatch del APIM"

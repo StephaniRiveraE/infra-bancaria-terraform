@@ -1,19 +1,8 @@
-# =============================================================================
-# APIM - API Gateway / Middleware Switch Transaccional
-# Responsable: Christian
-# Componentes: API Gateway HTTP v2, VPC Link, Security Groups
-# Nota: Usa el endpoint HTTPS nativo de API Gateway (no requiere certificado)
-# =============================================================================
-
-# -----------------------------------------------------------------------------
-# Security Group para VPC Link (conexión privada al backend)
-# -----------------------------------------------------------------------------
 resource "aws_security_group" "apim_vpc_link_sg" {
   name        = "apim-vpc-link-sg"
   vpc_id      = aws_vpc.vpc_bancaria.id
   description = "Security group para VPC Link del APIM - conecta API Gateway al backend privado"
 
-  # Tráfico hacia el backend (puerto 8080)
   egress {
     from_port   = 8080
     to_port     = 8080
@@ -22,7 +11,6 @@ resource "aws_security_group" "apim_vpc_link_sg" {
     description = "Conexion al backend en subredes privadas"
   }
 
-  # Tráfico hacia el ALB (puerto 80)
   egress {
     from_port   = 80
     to_port     = 80
@@ -31,7 +19,6 @@ resource "aws_security_group" "apim_vpc_link_sg" {
     description = "Conexion al ALB del backend"
   }
 
-  # Tráfico HTTPS saliente (para integraciones)
   egress {
     from_port   = 443
     to_port     = 443
@@ -46,15 +33,11 @@ resource "aws_security_group" "apim_vpc_link_sg" {
   })
 }
 
-# -----------------------------------------------------------------------------
-# Security Group para Backend (permite tráfico desde VPC Link)
-# -----------------------------------------------------------------------------
 resource "aws_security_group" "apim_backend_sg" {
   name        = "apim-backend-sg"
   vpc_id      = aws_vpc.vpc_bancaria.id
   description = "Security group para backend del APIM - permite trafico desde VPC Link"
 
-  # Tráfico desde VPC Link hacia el backend (puerto 8080)
   ingress {
     from_port       = 8080
     to_port         = 8080
@@ -63,7 +46,6 @@ resource "aws_security_group" "apim_backend_sg" {
     description     = "Trafico desde VPC Link del APIM"
   }
 
-  # Tráfico desde VPC Link hacia el ALB (puerto 80)
   ingress {
     from_port       = 80
     to_port         = 80
@@ -85,10 +67,6 @@ resource "aws_security_group" "apim_backend_sg" {
   })
 }
 
-# -----------------------------------------------------------------------------
-# API Gateway HTTP v2 - Entrada principal del Switch
-# Incluye HTTPS automático con certificado de AWS
-# -----------------------------------------------------------------------------
 resource "aws_apigatewayv2_api" "apim_gateway" {
   name          = "apim-switch-gateway"
   protocol_type = "HTTP"
@@ -107,14 +85,10 @@ resource "aws_apigatewayv2_api" "apim_gateway" {
   })
 }
 
-# -----------------------------------------------------------------------------
-# VPC Link para conexión privada al backend (Multi-AZ)
-# -----------------------------------------------------------------------------
 resource "aws_apigatewayv2_vpc_link" "apim_vpc_link" {
   name               = "apim-vpc-link"
   security_group_ids = [aws_security_group.apim_vpc_link_sg.id]
   
-  # Multi-AZ para alta disponibilidad (SLA 99.99%)
   subnet_ids = [
     aws_subnet.private_az1.id,
     aws_subnet.private_az2.id
@@ -126,15 +100,11 @@ resource "aws_apigatewayv2_vpc_link" "apim_vpc_link" {
   })
 }
 
-# -----------------------------------------------------------------------------
-# Stage del API Gateway con Logging (Trace-ID para 100% transacciones)
-# -----------------------------------------------------------------------------
 resource "aws_apigatewayv2_stage" "apim_stage" {
   api_id      = aws_apigatewayv2_api.apim_gateway.id
   name        = var.environment
   auto_deploy = true
 
-  # Configuración de logs con Trace-ID único
   access_log_settings {
     destination_arn = aws_cloudwatch_log_group.apim_access_logs.arn
     format = jsonencode({
@@ -154,7 +124,6 @@ resource "aws_apigatewayv2_stage" "apim_stage" {
     })
   }
 
-  # Throttling: 50 TPS sostenidos, burst 100 (requisito ERS)
   default_route_settings {
     throttling_burst_limit = 100
     throttling_rate_limit  = 50
@@ -166,11 +135,6 @@ resource "aws_apigatewayv2_stage" "apim_stage" {
   })
 }
 
-# -----------------------------------------------------------------------------
-# Outputs del APIM
-# -----------------------------------------------------------------------------
-
-# Endpoint HTTPS principal (ya incluye SSL de AWS)
 output "apim_gateway_endpoint" {
   description = "Endpoint HTTPS del API Gateway (ya incluye SSL)"
   value       = aws_apigatewayv2_api.apim_gateway.api_endpoint
