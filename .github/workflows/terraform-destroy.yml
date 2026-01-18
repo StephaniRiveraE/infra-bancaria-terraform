@@ -1,0 +1,40 @@
+name: "Terraform Destroy (Manual)"
+
+on:
+  workflow_dispatch:
+    inputs:
+      target:
+        description: 'Recurso a destruir (ej: aws_db_instance.rds_instances)'
+        required: false
+        default: ''
+      confirm:
+        description: 'Escribe "CONFIRMAR" para proceder'
+        required: true
+
+jobs:
+  terraform-destroy:
+    name: "Destruir Recursos"
+    runs-on: ubuntu-latest
+    if: github.event.inputs.confirm == 'CONFIRMAR'
+    env:
+      AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
+      AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+      AWS_REGION: "us-east-2"
+
+    steps:
+      - name: "Checkout"
+        uses: actions/checkout@v4
+
+      - name: "Setup Terraform"
+        uses: hashicorp/setup-terraform@v3
+
+      - name: "Terraform Init"
+        run: terraform init
+
+      - name: "Terraform Destroy (target específico)"
+        if: github.event.inputs.target != ''
+        run: terraform destroy -target=${{ github.event.inputs.target }} -auto-approve
+
+      - name: "Terraform Destroy (todo)"
+        if: github.event.inputs.target == ''
+        run: terraform destroy -auto-approve

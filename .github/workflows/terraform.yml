@@ -1,13 +1,11 @@
 name: "Terraform Infraestructura"
 
 on:
-  push:
-    branches:
-      - main
-      - desarrollo    
   pull_request:
     branches:
-      - main         
+      - main
+      - developer
+    types: [opened, synchronize, closed]    
 jobs:
   terraform:
     name: "Terraform Workflow"
@@ -32,6 +30,5 @@ jobs:
         run: terraform plan
 
       - name: "5. Terraform Apply"
-  
-        if: github.ref == 'refs/heads/main' && github.event_name == 'push'
+        if: github.event.pull_request.base.ref == 'main' && github.event.pull_request.merged == true
         run: terraform apply -auto-approve
