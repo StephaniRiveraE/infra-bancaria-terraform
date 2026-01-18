@@ -9,7 +9,7 @@
 # Kris subirá aquí el archivo truststore.pem con los certificados de los bancos
 # -----------------------------------------------------------------------------
 resource "aws_s3_bucket" "mtls_truststore" {
-  bucket = "mtls-truststore-${var.project_name}-${var.environment}"
+  bucket = "mtls-truststore-${lower(var.project_name)}-${var.environment}"
 
   tags = merge(var.common_tags, {
     Name      = "mtls-truststore"
