@@ -101,12 +101,6 @@ variable "apim_domain_name" {
   default     = "api.switch-transaccional.com"
 }
 
-variable "apim_integration_timeout_ms" {
-  description = "Timeout de integración en milisegundos (ERS: 3-5 segundos)"
-  type        = number
-  default     = 5000
-}
-
 # =============================================================================
 # Variables de Seguridad (Kris)
 # =============================================================================
@@ -116,3 +110,4 @@ variable "crl_s3_bucket" {
   type        = string
   default     = "apim-crl-bucket"
 }
+
