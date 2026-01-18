@@ -5,11 +5,7 @@
 # -----------------------------------------------------------------------------
 # Variables Generales
 # -----------------------------------------------------------------------------
-variable "environment" {
-  description = "Ambiente de despliegue (dev, staging, prod)"
-  type        = string
-  default     = "dev"
-}
+# NOTA: La variable "environment" ya está definida en variables.tf
 
 variable "apim_backend_base_url" {
   description = "URL base del backend interno (Core del Switch)"
