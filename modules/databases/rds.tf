@@ -18,8 +18,8 @@ resource "aws_db_instance" "rds_instances" {
   username               = var.rds_username
   password               = random_password.db_passwords[each.key].result
 
-  db_subnet_group_name   = aws_db_subnet_group.db_segments.name
-  vpc_security_group_ids = [aws_security_group.rds_sg.id]
+  db_subnet_group_name   = var.db_subnet_group_name
+  vpc_security_group_ids = [var.rds_security_group_id]
   
   publicly_accessible    = false 
   storage_encrypted      = true  
