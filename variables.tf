@@ -103,3 +103,33 @@ variable "apim_enable_custom_domain" {
   type        = bool
   default     = false
 }
+
+variable "apim_backend_port" {
+  description = "Puerto del backend"
+  type        = number
+  default     = 8080
+}
+
+variable "apim_integration_timeout_ms" {
+  description = "Timeout de integración con backend (ms)"
+  type        = number
+  default     = 29000
+}
+
+variable "apim_circuit_breaker_error_threshold" {
+  description = "Errores 5xx para abrir circuit breaker"
+  type        = number
+  default     = 5
+}
+
+variable "apim_circuit_breaker_latency_threshold_ms" {
+  description = "Latencia máxima (ms) antes de abrir circuit breaker"
+  type        = number
+  default     = 4000
+}
+
+variable "apim_circuit_breaker_cooldown_seconds" {
+  description = "Tiempo de enfriamiento (segundos)"
+  type        = number
+  default     = 30
+}
