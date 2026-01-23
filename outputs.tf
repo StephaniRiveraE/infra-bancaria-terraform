@@ -54,23 +54,5 @@ output "sqs_main_queue_url" {
   value       = module.messaging.sqs_main_queue_url
 }
 
-# Outputs de API Gateway
-output "apim_gateway_endpoint" {
-  description = "Endpoint HTTPS del API Gateway"
-  value       = module.api_gateway.apim_gateway_endpoint
-}
-
-output "apim_backend_alb_dns" {
-  description = "DNS del ALB del backend"
-  value       = module.api_gateway.apim_backend_alb_dns
-}
-
-output "apim_backend_target_group_arn" {
-  description = "ARN del Target Group (para registrar instancias del backend)"
-  value       = module.api_gateway.apim_backend_target_group_arn
-}
-
-output "circuit_breaker_sns_topic_arn" {
-  description = "ARN del SNS Topic para alertas del Circuit Breaker"
-  value       = module.api_gateway.circuit_breaker_sns_topic_arn
-}
+# NOTA: Los outputs de api-gateway y security-certs se definen
+# directamente en sus archivos .tf dentro de modules/api-gateway/ y modules/security-certs/

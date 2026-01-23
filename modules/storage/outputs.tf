@@ -1,7 +1,5 @@
 output "ecr_repository_urls" {
-  description = "URLs de los reposi
-
-torios ECR"
+  description = "URLs de los repositorios ECR"
   value       = { for k, v in aws_ecr_repository.repos : k => v.repository_url }
 }
 
