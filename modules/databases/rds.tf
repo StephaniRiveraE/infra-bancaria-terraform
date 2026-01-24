@@ -32,7 +32,7 @@ resource "aws_db_instance" "rds_instances" {
 }
 resource "aws_secretsmanager_secret" "db_secrets" {
   for_each    = var.entidades
-  name        = "rds-secret-${each.key}-v1"
+  name        = "rds-secret-${each.key}-v2"
   description = "Credenciales maestras para la instancia RDS de ${each.key}"
   
   recovery_window_in_days = 7 
