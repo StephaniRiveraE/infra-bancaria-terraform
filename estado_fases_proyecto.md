@@ -62,16 +62,42 @@ Este documento detalla qué recursos están **realmente implementados** en el c�
 
 ## 🧠 Fase 3: Cómputo (Kubernetes)
 
-**Estado:** 🔴 **Pendiente** (Falta implementación en `main.tf` y módulos)
+**Estado:** ✅ **Completamente Implementado** (Módulo: `compute`)
 
 ### 📦 Lo que está implementado:
-*   **Roles IAM:** Los roles necesarios para el clúster (`ClusterRole`, `FargatePodExecutionRole`) existen en el módulo `iam`, pero el clúster en sí no.
+
+| Recurso | Nombre en Terraform | Identificador (AWS Console) | Configuración Clave |
+|---------|---------------------|------------------------------|---------------------|
+| **EKS Cluster** | `aws_eks_cluster.bancario` | `eks-banca-ecosistema` | Version: `1.29`, Logs habilitados |
+| **Fargate Profile** | `aws_eks_fargate_profile.entities["arcbank"]` | `fargate-arcbank` | Namespace: `arcbank` |
+| **Fargate Profile** | `aws_eks_fargate_profile.entities["bantec"]` | `fargate-bantec` | Namespace: `bantec` |
+| **Fargate Profile** | `aws_eks_fargate_profile.entities["nexus"]` | `fargate-nexus` | Namespace: `nexus` |
+| **Fargate Profile** | `aws_eks_fargate_profile.entities["ecusol"]` | `fargate-ecusol` | Namespace: `ecusol` |
+| **Fargate Profile** | `aws_eks_fargate_profile.entities["switch"]` | `fargate-switch` | Namespace: `switch` |
+| **Fargate Profile** | `aws_eks_fargate_profile.kube_system` | `fargate-kube-system` | CoreDNS |
+| **Fargate Profile** | `aws_eks_fargate_profile.aws_lb_controller` | `fargate-aws-lb-controller` | ALB Controller |
+| **EKS Addon** | `aws_eks_addon.vpc_cni` | `vpc-cni` | Plugin de red |
+| **EKS Addon** | `aws_eks_addon.kube_proxy` | `kube-proxy` | Proxy de servicios |
+| **EKS Addon** | `aws_eks_addon.coredns` | `coredns` | DNS interno |
+| **EKS Addon** | `aws_eks_addon.pod_identity` | `eks-pod-identity-agent` | IRSA |
+| **OIDC Provider** | `aws_iam_openid_connect_provider.eks` | `eks-oidc-provider` | Para IAM Roles en pods |
+| **IAM Role** | `aws_iam_role.alb_controller` | `eks-alb-controller-role` | ALB Controller |
+| **Security Group** | `aws_security_group.eks_cluster_sg` | `eks-cluster-sg` | Ingress 443 VPC |
+| **CloudWatch Logs** | `aws_cloudwatch_log_group.eks_cluster` | `/aws/eks/eks-banca-ecosistema/cluster` | 30 días retención |
+
+#### 🔍 Cómo buscar en AWS Console:
+1. **EKS:** Ve a **Amazon EKS** → **Clusters** → `eks-banca-ecosistema`
+2. **Fargate Profiles:** Dentro del clúster → Pestaña **Compute** → **Fargate profiles**
+3. **Addons:** Dentro del clúster → Pestaña **Add-ons**
+4. **OIDC:** Ve a **IAM** → **Identity providers**
+5. **Rol ALB:** Ve a **IAM** → **Roles** → `eks-alb-controller-role`
+
+### 📋 Post-Apply (Comandos manuales necesarios):
+Ver [FASE3_EKS_GUIA.md](./FASE3_EKS_GUIA.md) para el paso a paso completo.
 
 ### ❌ Lo que falta:
-*   **EKS Cluster:** Falta el recurso `aws_eks_cluster`.
-*   **Fargate Profiles:** Falta configuración de perfiles Fargate para los namespaces (`arcbank`, `nexus`, etc.).
-*   **Node Groups:** (Si se requieren, aunque el plan dice Fargate).
-*   **Add-ons:** Coredns, kube-proxy, vpc-cni (usualmente gestionados por EKS o addons).
+*   Nada. Esta fase está completa en el código.
+*   **Nota:** Requiere comandos post-apply para parchar CoreDNS e instalar ALB Controller via Helm.
 
 ---
 
@@ -111,6 +137,12 @@ Este documento detalla qué recursos están **realmente implementados** en el c�
 
 ## 📝 Resumen de Acción Inmediata
 
-1.  **Para completar Fase 2:** Debes crear el recurso de **ElastiCache (Redis)**.
-2.  **Para activar Fase 4:** Debes descomentar o agregar la llamada al módulo `api-gateway` en tu `main.tf` y asegurarte de pasarle las variables necesarias (VPC ID, Subnets, etc.).
-3.  **Para iniciar Fase 3:** Necesitas crear un nuevo módulo `eks` o agregar `eks.tf` para levantar el clúster.
+1.  **Fase 2 (75%):** Falta crear el recurso de **ElastiCache (Redis)**.
+2.  **Fase 3 (100%):** ✅ Completada. Ver [FASE3_EKS_GUIA.md](./FASE3_EKS_GUIA.md) para comandos post-apply.
+3.  **Fase 4:** Activar el módulo `api-gateway` en `main.tf`.
+4.  **Fase 5:** Pendiente de implementación.
+
+---
+
+**Última actualización:** 2026-01-27
+
