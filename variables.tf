@@ -133,3 +133,17 @@ variable "apim_circuit_breaker_cooldown_seconds" {
   type        = number
   default     = 30
 }
+variable "common_tags" {}
+variable "vpc_id" {}
+variable "private_subnet_ids" { type = list(string) }
+variable "environment" {}
+
+# Variables de Seguridad (Vienen de los otros modulos)
+variable "cognito_endpoint" {}
+variable "cognito_client_ids" { type = list(string) }
+variable "internal_secret_value" {}
+variable "backend_security_group_id" {}
+variable "apim_vpc_link_security_group_id" {}
+
+variable "apim_backend_port" { default = 8080 }
+variable "apim_integration_timeout_ms" { default = 29000 }

@@ -71,3 +71,34 @@ module "compute" {
   
   common_tags = var.common_tags
 }
+# ... (Tus módulos previos: networking, iam, storage, databases, messaging NO LOS TOQUES) ...
+
+# Módulo de Seguridad e Identidad (Cognito)
+module "security_identity" {
+  source = "./modules/security-certs"
+
+  project_name = "Digiconecu"
+  environment  = "dev"
+  common_tags  = var.common_tags
+}
+
+# Módulo API Gateway
+module "api_gateway" {
+  source = "./modules/api-gateway"
+
+  # Variables Generales
+  project_name = "Digiconecu"
+  environment  = "dev"
+  common_tags  = var.common_tags
+
+  # Variables de Red (Desde el modulo networking)
+  vpc_id                        = module.networking.vpc_id
+  private_subnet_ids            = [module.networking.private_subnet_az1_id, module.networking.private_subnet_az2_id]
+  backend_security_group_id     = module.networking.backend_sg_id 
+  apim_vpc_link_security_group_id = module.networking.apim_vpc_link_sg_id
+  
+  # Variables de Seguridad (Desde el modulo security_identity)
+  cognito_endpoint      = module.security_identity.cognito_endpoint
+  cognito_client_ids    = module.security_identity.cognito_client_ids
+  internal_secret_value = module.security_identity.internal_secret_value
+}

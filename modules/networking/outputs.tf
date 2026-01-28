@@ -42,3 +42,10 @@ output "internet_gateway_id" {
   description = "ID del Internet Gateway"
   value       = aws_internet_gateway.igw.id
 }
+output "apim_vpc_link_sg_id" {
+  value = aws_security_group.apim_vpc_link_sg.id
+}
+
+output "backend_sg_id" {
+  value = aws_security_group.backend_sg.id
+}
