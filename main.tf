@@ -45,12 +45,11 @@ module "databases" {
 }
 
 # Módulo 5: Messaging (Amazon MQ - RabbitMQ)
+# NOTA: Broker público, no requiere VPC ni subnet (AWS lo maneja)
 module "messaging" {
   source = "./modules/messaging"
 
-  vpc_id           = module.networking.vpc_id
-  public_subnet_id = module.networking.public_subnet_az1_id
-  common_tags      = var.common_tags
+  common_tags = var.common_tags
 }
 
 # NOTA: Los módulos api-gateway y security-certs NO se llaman aquí

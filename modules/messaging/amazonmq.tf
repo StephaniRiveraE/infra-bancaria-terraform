@@ -10,44 +10,9 @@ resource "random_password" "rabbitmq_password" {
   override_special = "!#$%&*+-=?^_"
 }
 
-# Security Group para Amazon MQ (RabbitMQ)
-resource "aws_security_group" "rabbitmq_sg" {
-  name        = "rabbitmq-broker-sg"
-  vpc_id      = var.vpc_id
-  description = "Security group para Amazon MQ RabbitMQ - acceso publico para bancos externos"
-
-  # Puerto AMQPS (conexión segura desde microservicios)
-  ingress {
-    from_port   = 5671
-    to_port     = 5671
-    protocol    = "tcp"
-    cidr_blocks = ["0.0.0.0/0"]
-    description = "AMQPS - Conexion segura para microservicios"
-  }
-
-  # Puerto de consola web de RabbitMQ
-  ingress {
-    from_port   = 443
-    to_port     = 443
-    protocol    = "tcp"
-    cidr_blocks = ["0.0.0.0/0"]
-    description = "Consola web de administracion RabbitMQ"
-  }
-
-  egress {
-    from_port   = 0
-    to_port     = 0
-    protocol    = "-1"
-    cidr_blocks = ["0.0.0.0/0"]
-  }
-
-  tags = merge(var.common_tags, {
-    Name      = "sg-rabbitmq-broker"
-    Component = "Messaging"
-  })
-}
-
-# Broker de Amazon MQ (RabbitMQ)
+# Broker de Amazon MQ (RabbitMQ) - PÚBLICO
+# NOTA: Brokers públicos NO permiten security groups ni subnets
+# AWS maneja la seguridad automáticamente mediante TLS
 resource "aws_mq_broker" "rabbitmq" {
   broker_name = "switch-rabbitmq"
 
@@ -63,10 +28,6 @@ resource "aws_mq_broker" "rabbitmq" {
     username = "mqadmin"
     password = random_password.rabbitmq_password.result
   }
-
-  # Red - usa una subnet pública para acceso externo
-  subnet_ids         = [var.public_subnet_id]
-  security_groups    = [aws_security_group.rabbitmq_sg.id]
 
   # Mantenimiento automático (domingos 3-4 AM)
   maintenance_window_start_time {
