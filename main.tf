@@ -44,7 +44,8 @@ module "databases" {
   rds_security_group_id = module.networking.rds_security_group_id
 }
 
-# Módulo 5: Messaging (SQS)
+# Módulo 5: Messaging (Amazon MQ - RabbitMQ)
+# NOTA: Broker público, no requiere VPC ni subnet (AWS lo maneja)
 module "messaging" {
   source = "./modules/messaging"
 
@@ -54,3 +55,20 @@ module "messaging" {
 # NOTA: Los módulos api-gateway y security-certs NO se llaman aquí
 # porque sus archivos .tf originales YA TIENEN las variables definidas
 # internamente y se ejecutan directamente sin necesidad de module block.
+
+# ============================================================================
+# Módulo 6: Compute (EKS + Fargate) - FASE 3
+# Clúster de Kubernetes con Fargate para los 4 bancos + Switch
+# ============================================================================
+module "compute" {
+  source = "./modules/compute"
+
+  vpc_id             = module.networking.vpc_id
+  private_subnet_ids = [module.networking.private_subnet_az1_id, module.networking.private_subnet_az2_id]
+  public_subnet_ids  = [module.networking.public_subnet_az1_id, module.networking.public_subnet_az2_id]
+  
+  eks_cluster_role_arn       = module.iam.eks_cluster_role_arn
+  fargate_execution_role_arn = module.iam.fargate_execution_role_arn
+  
+  common_tags = var.common_tags
+}

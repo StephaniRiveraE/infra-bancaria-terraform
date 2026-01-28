@@ -48,11 +48,67 @@ output "dynamodb_table_names" {
   value       = module.databases.dynamodb_table_names
 }
 
-# Outputs de Messaging
-output "sqs_main_queue_url" {
-  description = "URL de la cola principal SQS"
-  value       = module.messaging.sqs_main_queue_url
+# Outputs de Messaging (Amazon MQ - RabbitMQ)
+output "rabbitmq_console_url" {
+  description = "URL de la consola web de RabbitMQ (para administrar colas)"
+  value       = module.messaging.rabbitmq_console_url
+}
+
+output "rabbitmq_amqps_endpoint" {
+  description = "Endpoint AMQPS para conexion desde microservicios"
+  value       = module.messaging.rabbitmq_amqps_endpoint
+}
+
+output "rabbitmq_username" {
+  description = "Usuario admin de RabbitMQ"
+  value       = module.messaging.rabbitmq_username
+}
+
+output "rabbitmq_credentials_secret_arn" {
+  description = "ARN del secreto con las credenciales (buscar en Secrets Manager)"
+  value       = module.messaging.rabbitmq_credentials_secret_arn
+  sensitive   = true
 }
 
 # NOTA: Los outputs de api-gateway y security-certs se definen
 # directamente en sus archivos .tf dentro de modules/api-gateway/ y modules/security-certs/
+
+# ============================================================================
+# Outputs de Compute (EKS + Fargate) - FASE 3
+# ============================================================================
+
+output "eks_cluster_name" {
+  description = "Nombre del clúster EKS"
+  value       = module.compute.cluster_name
+}
+
+output "eks_cluster_endpoint" {
+  description = "Endpoint del API server de EKS"
+  value       = module.compute.cluster_endpoint
+}
+
+output "eks_kubeconfig_ca" {
+  description = "Certificado CA para kubeconfig"
+  value       = module.compute.cluster_certificate_authority_data
+  sensitive   = true
+}
+
+output "eks_oidc_provider_arn" {
+  description = "ARN del OIDC provider para IRSA"
+  value       = module.compute.oidc_provider_arn
+}
+
+output "eks_fargate_profiles" {
+  description = "Nombres de los Fargate profiles creados"
+  value       = module.compute.fargate_profile_names
+}
+
+output "eks_alb_controller_role_arn" {
+  description = "ARN del rol para AWS Load Balancer Controller"
+  value       = module.compute.alb_controller_role_arn
+}
+
+output "eks_kubectl_command" {
+  description = "Comando para configurar kubectl"
+  value       = module.compute.kubectl_config_command
+}
