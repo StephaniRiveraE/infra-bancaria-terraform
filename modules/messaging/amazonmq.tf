@@ -51,11 +51,12 @@ resource "aws_security_group" "rabbitmq_sg" {
 resource "aws_mq_broker" "rabbitmq" {
   broker_name = "switch-rabbitmq"
 
-  engine_type         = "RabbitMQ"
-  engine_version      = "3.13"
-  host_instance_type  = "mq.t3.micro"
-  deployment_mode     = "SINGLE_INSTANCE"
-  publicly_accessible = true
+  engine_type                = "RabbitMQ"
+  engine_version             = "3.13"
+  host_instance_type         = "mq.t3.micro"
+  deployment_mode            = "SINGLE_INSTANCE"
+  publicly_accessible        = true
+  auto_minor_version_upgrade = true
 
   # Usuario administrador
   user {
