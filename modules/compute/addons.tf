@@ -33,6 +33,23 @@ resource "aws_eks_addon" "coredns" {
   resolve_conflicts_on_create = "OVERWRITE"
   resolve_conflicts_on_update = "OVERWRITE"
 
+  # Configuración crítica para clusters Fargate-only
+  # Esto elimina la anotación eks.amazonaws.com/compute-type: ec2
+  # permitiendo que CoreDNS se programe en nodos Fargate
+  configuration_values = jsonencode({
+    computeType = "Fargate"
+    resources = {
+      limits = {
+        cpu    = "0.25"
+        memory = "256M"
+      }
+      requests = {
+        cpu    = "0.25"
+        memory = "256M"
+      }
+    }
+  })
+
   tags = merge(var.common_tags, {
     Addon = "coredns"
   })
