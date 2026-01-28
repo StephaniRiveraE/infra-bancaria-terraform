@@ -44,11 +44,13 @@ module "databases" {
   rds_security_group_id = module.networking.rds_security_group_id
 }
 
-# Módulo 5: Messaging (SQS)
+# Módulo 5: Messaging (Amazon MQ - RabbitMQ)
 module "messaging" {
   source = "./modules/messaging"
 
-  common_tags = var.common_tags
+  vpc_id           = module.networking.vpc_id
+  public_subnet_id = module.networking.public_subnet_az1_id
+  common_tags      = var.common_tags
 }
 
 # NOTA: Los módulos api-gateway y security-certs NO se llaman aquí
