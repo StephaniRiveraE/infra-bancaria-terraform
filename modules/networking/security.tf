@@ -60,3 +60,82 @@ resource "aws_security_group" "backend_sg" {
 
   tags = merge(var.common_tags, { Name = "sg-backend-internal" })
 }
+# 1. SG para el VPC Link (Salida del API Gateway)
+resource "aws_security_group" "apim_vpc_link_sg" {
+  name        = "apim-vpc-link-sg"
+  vpc_id      = var.vpc_id
+  description = "Permite al API Gateway salir a buscar al backend"
+  egress {
+    from_port   = 0
+    to_port     = 0
+    protocol    = "-1"
+    cidr_blocks = ["0.0.0.0/0"]
+  }
+  tags = merge(var.common_tags, { Name = "sg-apim-vpc-link" })
+}
+
+# 2. SG para el Backend (Solo acepta tráfico del VPC Link)
+resource "aws_security_group" "backend_sg" {
+  name        = "backend-internal-sg"
+  vpc_id      = var.vpc_id
+  description = "Solo acepta trafico del API Gateway"
+  ingress {
+    from_port       = 80
+    to_port         = 80
+    protocol        = "tcp"
+    security_groups = [aws_security_group.apim_vpc_link_sg.id]
+  }
+  ingress {
+    from_port       = 8080
+    to_port         = 8080
+    protocol        = "tcp"
+    security_groups = [aws_security_group.apim_vpc_link_sg.id]
+  }
+  egress {
+    from_port   = 0
+    to_port     = 0
+    protocol    = "-1"
+    cidr_blocks = ["0.0.0.0/0"]
+  }
+  tags = merge(var.common_tags, { Name = "sg-backend-internal" })
+}
+
+# 1. SG para el VPC Link (Salida del API Gateway)
+resource "aws_security_group" "apim_vpc_link_sg" {
+  name        = "apim-vpc-link-sg"
+  vpc_id      = var.vpc_id
+  description = "Permite al API Gateway salir a buscar al backend"
+  egress {
+    from_port   = 0
+    to_port     = 0
+    protocol    = "-1"
+    cidr_blocks = ["0.0.0.0/0"]
+  }
+  tags = merge(var.common_tags, { Name = "sg-apim-vpc-link" })
+}
+
+# 2. SG para el Backend (Solo acepta tráfico del VPC Link)
+resource "aws_security_group" "backend_sg" {
+  name        = "backend-internal-sg"
+  vpc_id      = var.vpc_id
+  description = "Solo acepta trafico del API Gateway"
+  ingress {
+    from_port       = 80
+    to_port         = 80
+    protocol        = "tcp"
+    security_groups = [aws_security_group.apim_vpc_link_sg.id]
+  }
+  ingress {
+    from_port       = 8080
+    to_port         = 8080
+    protocol        = "tcp"
+    security_groups = [aws_security_group.apim_vpc_link_sg.id]
+  }
+  egress {
+    from_port   = 0
+    to_port     = 0
+    protocol    = "-1"
+    cidr_blocks = ["0.0.0.0/0"]
+  }
+  tags = merge(var.common_tags, { Name = "sg-backend-internal" })
+}

@@ -51,10 +51,6 @@ module "messaging" {
   common_tags = var.common_tags
 }
 
-# NOTA: Los módulos api-gateway y security-certs NO se llaman aquí
-# porque sus archivos .tf originales YA TIENEN las variables definidas
-# internamente y se ejecutan directamente sin necesidad de module block.
-
 # ============================================================================
 # Módulo 6: Compute (EKS + Fargate) - FASE 3
 # Clúster de Kubernetes con Fargate para los 4 bancos + Switch
@@ -71,9 +67,10 @@ module "compute" {
   
   common_tags = var.common_tags
 }
-# ... (Tus módulos previos: networking, iam, storage, databases, messaging NO LOS TOQUES) ...
 
-# Módulo de Seguridad e Identidad (Cognito)
+# ============================================================================
+# Módulo 7: Seguridad e Identidad (Cognito) - FASE 4 (Refactor)
+# ============================================================================
 module "security_identity" {
   source = "./modules/security-certs"
 
@@ -82,7 +79,9 @@ module "security_identity" {
   common_tags  = var.common_tags
 }
 
-# Módulo API Gateway
+# ============================================================================
+# Módulo 8: API Gateway (Switch Transaccional) - FASE 4 (Refactor)
+# ============================================================================
 module "api_gateway" {
   source = "./modules/api-gateway"
 
