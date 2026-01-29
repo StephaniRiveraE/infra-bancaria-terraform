@@ -133,3 +133,5 @@ variable "apim_circuit_breaker_cooldown_seconds" {
   type        = number
   default     = 30
 }
+# Duplicate removed
+# Internal plumbing variables removed
