@@ -133,7 +133,8 @@ variable "apim_circuit_breaker_cooldown_seconds" {
   type        = number
   default     = 30
 }
-variable "common_tags" {}
+# Duplicate removed
+
 variable "vpc_id" {}
 variable "private_subnet_ids" { type = list(string) }
 

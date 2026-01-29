@@ -1,7 +1,4 @@
-variable "vpc_id" {}
-variable "vpc_cidr" {}
-variable "availability_zones" { type = list(string) }
-variable "common_tags" { type = map(string) }
+# Variables removed (using networking/variables.tf)
 
 # 1. Security Group para RDS
 resource "aws_security_group" "rds_sg" {

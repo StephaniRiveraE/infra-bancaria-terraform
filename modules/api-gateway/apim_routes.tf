@@ -49,10 +49,15 @@ resource "aws_lb_listener" "apim_backend_listener" {
 
 # Rutas Protegidas
 resource "aws_apigatewayv2_integration" "backend_transfers" {
-  api_id = aws_apigatewayv2_api.apim_gateway.id; connection_type = "VPC_LINK"; connection_id = aws_apigatewayv2_vpc_link.apim_vpc_link.id
-  integration_type = "HTTP_PROXY"; integration_uri = aws_lb_listener.apim_backend_listener.arn; integration_method = "POST"; payload_format_version = "1.0"
+  api_id                 = aws_apigatewayv2_api.apim_gateway.id
+  connection_type        = "VPC_LINK"
+  connection_id          = aws_apigatewayv2_vpc_link.apim_vpc_link.id
+  integration_type       = "HTTP_PROXY"
+  integration_uri        = aws_lb_listener.apim_backend_listener.arn
+  integration_method     = "POST"
+  payload_format_version = "1.0"
   request_parameters = {
-    "overwrite:path" = "/api/v2/switch/transfers"
+    "overwrite:path"                   = "/api/v2/switch/transfers"
     "overwrite:header.x-origin-secret" = var.internal_secret_value
   }
 }
