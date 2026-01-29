@@ -62,8 +62,10 @@ resource "aws_apigatewayv2_integration" "backend_transfers" {
   }
 }
 resource "aws_apigatewayv2_route" "transfers_post" {
-  api_id = aws_apigatewayv2_api.apim_gateway.id; route_key = "POST /api/v2/switch/transfers"
-  target = "integrations/${aws_apigatewayv2_integration.backend_transfers.id}"
-  authorization_type = "JWT"; authorizer_id = aws_apigatewayv2_authorizer.cognito_auth.id
+  api_id               = aws_apigatewayv2_api.apim_gateway.id
+  route_key            = "POST /api/v2/switch/transfers"
+  target               = "integrations/${aws_apigatewayv2_integration.backend_transfers.id}"
+  authorization_type   = "JWT"
+  authorizer_id        = aws_apigatewayv2_authorizer.cognito_auth.id
   authorization_scopes = ["https://switch-api.com/transfers.write"]
 }
