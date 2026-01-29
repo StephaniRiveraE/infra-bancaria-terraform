@@ -23,10 +23,7 @@ resource "aws_apigatewayv2_vpc_link" "apim_vpc_link" {
   name               = "apim-vpc-link"
   security_group_ids = [var.apim_vpc_link_security_group_id]
   
-  subnet_ids = [
-    aws_subnet.private_az1.id,
-    aws_subnet.private_az2.id
-  ]
+  subnet_ids = var.private_subnet_ids
 
   tags = merge(var.common_tags, {
     Name      = "vpc-link-apim"

@@ -1,8 +1,4 @@
-variable "cognito_endpoint" { type = string }
-variable "cognito_client_ids" { type = list(string) }
-variable "internal_secret_value" { type = string }
-variable "backend_security_group_id" { type = string }
-variable "apim_vpc_link_security_group_id" { type = string }
+# Variables moved to variables.tf
 
 resource "aws_apigatewayv2_authorizer" "cognito_auth" {
   api_id           = aws_apigatewayv2_api.apim_gateway.id
