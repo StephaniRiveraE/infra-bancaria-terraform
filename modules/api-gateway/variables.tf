@@ -30,3 +30,20 @@ variable "apim_acm_certificate_arn" {
   type    = string
   default = ""
 }
+
+variable "apim_log_retention_days" {
+  description = "Days to retain CloudWatch logs"
+  type        = number
+  default     = 30
+}
+
+variable "apim_alarm_sns_topic_arn" {
+  description = "SNS Topic ARN for CloudWatch Alarms"
+  type        = string
+  default     = ""
+}
+
+variable "aws_region" {
+  type    = string
+  default = "us-east-2"
+}
