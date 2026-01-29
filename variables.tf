@@ -134,13 +134,4 @@ variable "apim_circuit_breaker_cooldown_seconds" {
   default     = 30
 }
 # Duplicate removed
-
-variable "vpc_id" {}
-variable "private_subnet_ids" { type = list(string) }
-
-# Variables de Seguridad (Vienen de los otros modulos)
-variable "cognito_endpoint" {}
-variable "cognito_client_ids" { type = list(string) }
-variable "internal_secret_value" {}
-variable "backend_security_group_id" {}
-variable "apim_vpc_link_security_group_id" {}
+# Internal plumbing variables removed
