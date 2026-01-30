@@ -28,12 +28,7 @@ resource "aws_db_instance" "rds_instances" {
   # Ignorar cambios que causan errores cuando RDS está stopped
   # AWS no permite modificar RDS en estado stopped
   lifecycle {
-    ignore_changes = [
-      engine_version,      # Evita intentar actualizar versión
-      instance_class,      # Evita cambiar tipo de instancia
-      allocated_storage,   # Evita cambiar almacenamiento
-      password,            # Evita cambiar password
-    ]
+    ignore_changes = all  # Ignorar TODOS los cambios para evitar errores con RDS stopped
   }
 
   tags = merge(var.common_tags, {
