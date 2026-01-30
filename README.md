@@ -4,7 +4,7 @@
 **Estrategia:** 100% PaaS (Platform as a Service)  
 **Región:** us-east-2 (Ohio)  
 **Gestión:** Terraform + GitHub Actions
-
+.
 ---
 
 ## 📑 Tabla de Contenidos
