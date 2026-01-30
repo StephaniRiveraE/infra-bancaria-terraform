@@ -48,10 +48,26 @@ output "dynamodb_table_names" {
   value       = module.databases.dynamodb_table_names
 }
 
-# Outputs de Messaging
-output "sqs_main_queue_url" {
-  description = "URL de la cola principal SQS"
-  value       = module.messaging.sqs_main_queue_url
+# Outputs de Messaging (Amazon MQ - RabbitMQ)
+output "rabbitmq_console_url" {
+  description = "URL de la consola web de RabbitMQ (para administrar colas)"
+  value       = module.messaging.rabbitmq_console_url
+}
+
+output "rabbitmq_amqps_endpoint" {
+  description = "Endpoint AMQPS para conexion desde microservicios"
+  value       = module.messaging.rabbitmq_amqps_endpoint
+}
+
+output "rabbitmq_username" {
+  description = "Usuario admin de RabbitMQ"
+  value       = module.messaging.rabbitmq_username
+}
+
+output "rabbitmq_credentials_secret_arn" {
+  description = "ARN del secreto con las credenciales (buscar en Secrets Manager)"
+  value       = module.messaging.rabbitmq_credentials_secret_arn
+  sensitive   = true
 }
 
 # NOTA: Los outputs de api-gateway y security-certs se definen

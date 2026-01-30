@@ -45,16 +45,13 @@ module "databases" {
   rds_security_group_id = module.networking.rds_security_group_id
 }
 
-# Módulo 5: Messaging (SQS)
+# Módulo 5: Messaging (Amazon MQ - RabbitMQ)
+# NOTA: Broker público, no requiere VPC ni subnet (AWS lo maneja)
 module "messaging" {
   source = "./modules/messaging"
 
   common_tags = var.common_tags
 }
-
-# NOTA: Los módulos api-gateway y security-certs NO se llaman aquí
-# porque sus archivos .tf originales YA TIENEN las variables definidas
-# internamente y se ejecutan directamente sin necesidad de module block.
 
 # ============================================================================
 # Módulo 6: Compute (EKS + Fargate) - FASE 3
@@ -73,4 +70,38 @@ module "compute" {
   common_tags            = var.common_tags
   eks_enabled            = var.eks_enabled            # Controla creación del stack EKS
   eks_log_retention_days = var.eks_log_retention_days # Días de retención de logs
+}
+
+# ============================================================================
+# Módulo 7: Seguridad e Identidad (Cognito) - FASE 4 (Refactor)
+# ============================================================================
+module "security_identity" {
+  source = "./modules/security-certs"
+
+  project_name = "Digiconecu"
+  environment  = "dev"
+  common_tags  = var.common_tags
+}
+
+# ============================================================================
+# Módulo 8: API Gateway (Switch Transaccional) - FASE 4 (Refactor)
+# ============================================================================
+module "api_gateway" {
+  source = "./modules/api-gateway"
+
+  # Variables Generales
+  project_name = "Digiconecu"
+  environment  = "dev"
+  common_tags  = var.common_tags
+
+  # Variables de Red (Desde el modulo networking)
+  vpc_id                        = module.networking.vpc_id
+  private_subnet_ids            = [module.networking.private_subnet_az1_id, module.networking.private_subnet_az2_id]
+  backend_security_group_id     = module.networking.backend_sg_id 
+  apim_vpc_link_security_group_id = module.networking.apim_vpc_link_sg_id
+  
+  # Variables de Seguridad (Desde el modulo security_identity)
+  cognito_endpoint      = module.security_identity.cognito_endpoint
+  cognito_client_ids    = module.security_identity.cognito_client_ids
+  internal_secret_value = module.security_identity.internal_secret_value
 }
