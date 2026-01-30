@@ -37,3 +37,15 @@ variable "common_tags" {
   description = "Tags comunes para todos los recursos"
   type        = map(string)
 }
+
+variable "eks_enabled" {
+  description = "Habilitar/deshabilitar el stack de EKS completo"
+  type        = bool
+  default     = false
+}
+
+variable "eks_log_retention_days" {
+  description = "Días de retención para logs de EKS"
+  type        = number
+  default     = 7
+}

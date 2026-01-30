@@ -10,6 +10,7 @@ module "networking" {
   vpc_cidr           = var.vpc_cidr
   availability_zones = var.availability_zones
   common_tags        = var.common_tags
+  eks_enabled        = var.eks_enabled  # Controla creación de NAT Gateway
 }
 
 # Módulo 2: IAM Roles (EKS Cluster, Fargate Execution)
@@ -69,5 +70,7 @@ module "compute" {
   eks_cluster_role_arn       = module.iam.eks_cluster_role_arn
   fargate_execution_role_arn = module.iam.fargate_execution_role_arn
   
-  common_tags = var.common_tags
+  common_tags            = var.common_tags
+  eks_enabled            = var.eks_enabled            # Controla creación del stack EKS
+  eks_log_retention_days = var.eks_log_retention_days # Días de retención de logs
 }
