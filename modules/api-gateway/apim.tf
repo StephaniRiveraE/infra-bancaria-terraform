@@ -1,71 +1,5 @@
-resource "aws_security_group" "apim_vpc_link_sg" {
-  name        = "apim-vpc-link-sg"
-  vpc_id      = aws_vpc.vpc_bancaria.id
-  description = "Security group para VPC Link del APIM - conecta API Gateway al backend privado"
+# Security Groups are now managed in the networking module and passed as variables.
 
-  egress {
-    from_port   = 8080
-    to_port     = 8080
-    protocol    = "tcp"
-    cidr_blocks = [aws_vpc.vpc_bancaria.cidr_block]
-    description = "Conexion al backend en subredes privadas"
-  }
-
-  egress {
-    from_port   = 80
-    to_port     = 80
-    protocol    = "tcp"
-    cidr_blocks = [aws_vpc.vpc_bancaria.cidr_block]
-    description = "Conexion al ALB del backend"
-  }
-
-  egress {
-    from_port   = 443
-    to_port     = 443
-    protocol    = "tcp"
-    cidr_blocks = ["0.0.0.0/0"]
-    description = "HTTPS saliente"
-  }
-
-  tags = merge(var.common_tags, { 
-    Name      = "sg-apim-vpc-link"
-    Component = "APIM"
-  })
-}
-
-resource "aws_security_group" "apim_backend_sg" {
-  name        = "apim-backend-sg"
-  vpc_id      = aws_vpc.vpc_bancaria.id
-  description = "Security group para backend del APIM - permite trafico desde VPC Link"
-
-  ingress {
-    from_port       = 8080
-    to_port         = 8080
-    protocol        = "tcp"
-    security_groups = [aws_security_group.apim_vpc_link_sg.id]
-    description     = "Trafico desde VPC Link del APIM"
-  }
-
-  ingress {
-    from_port       = 80
-    to_port         = 80
-    protocol        = "tcp"
-    security_groups = [aws_security_group.apim_vpc_link_sg.id]
-    description     = "Trafico HTTP desde VPC Link al ALB"
-  }
-
-  egress {
-    from_port   = 0
-    to_port     = 0
-    protocol    = "-1"
-    cidr_blocks = ["0.0.0.0/0"]
-  }
-
-  tags = merge(var.common_tags, { 
-    Name      = "sg-apim-backend"
-    Component = "APIM"
-  })
-}
 
 resource "aws_apigatewayv2_api" "apim_gateway" {
   name          = "apim-switch-gateway"
@@ -87,12 +21,9 @@ resource "aws_apigatewayv2_api" "apim_gateway" {
 
 resource "aws_apigatewayv2_vpc_link" "apim_vpc_link" {
   name               = "apim-vpc-link"
-  security_group_ids = [aws_security_group.apim_vpc_link_sg.id]
+  security_group_ids = [var.apim_vpc_link_security_group_id]
   
-  subnet_ids = [
-    aws_subnet.private_az1.id,
-    aws_subnet.private_az2.id
-  ]
+  subnet_ids = var.private_subnet_ids
 
   tags = merge(var.common_tags, {
     Name      = "vpc-link-apim"
@@ -155,12 +86,4 @@ output "apim_vpc_link_id" {
   value       = aws_apigatewayv2_vpc_link.apim_vpc_link.id
 }
 
-output "apim_backend_sg_id" {
-  description = "Security Group ID del backend (para que Kris configure mTLS)"
-  value       = aws_security_group.apim_backend_sg.id
-}
 
-output "apim_vpc_link_sg_id" {
-  description = "Security Group ID del VPC Link"
-  value       = aws_security_group.apim_vpc_link_sg.id
-}

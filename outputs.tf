@@ -75,36 +75,42 @@ output "rabbitmq_credentials_secret_arn" {
 
 # ============================================================================
 # Outputs de Compute (EKS + Fargate) - FASE 3
+# NOTA: Retornan null cuando eks_enabled = false
 # ============================================================================
 
+output "eks_enabled" {
+  description = "Indica si el stack de EKS está habilitado (para ahorrar costos se puede poner en false)"
+  value       = module.compute.eks_enabled
+}
+
 output "eks_cluster_name" {
-  description = "Nombre del clúster EKS"
+  description = "Nombre del clúster EKS (null si eks_enabled = false)"
   value       = module.compute.cluster_name
 }
 
 output "eks_cluster_endpoint" {
-  description = "Endpoint del API server de EKS"
+  description = "Endpoint del API server de EKS (null si eks_enabled = false)"
   value       = module.compute.cluster_endpoint
 }
 
 output "eks_kubeconfig_ca" {
-  description = "Certificado CA para kubeconfig"
+  description = "Certificado CA para kubeconfig (null si eks_enabled = false)"
   value       = module.compute.cluster_certificate_authority_data
   sensitive   = true
 }
 
 output "eks_oidc_provider_arn" {
-  description = "ARN del OIDC provider para IRSA"
+  description = "ARN del OIDC provider para IRSA (null si eks_enabled = false)"
   value       = module.compute.oidc_provider_arn
 }
 
 output "eks_fargate_profiles" {
-  description = "Nombres de los Fargate profiles creados"
+  description = "Nombres de los Fargate profiles creados (vacío si eks_enabled = false)"
   value       = module.compute.fargate_profile_names
 }
 
 output "eks_alb_controller_role_arn" {
-  description = "ARN del rol para AWS Load Balancer Controller"
+  description = "ARN del rol para AWS Load Balancer Controller (null si eks_enabled = false)"
   value       = module.compute.alb_controller_role_arn
 }
 
@@ -112,3 +118,4 @@ output "eks_kubectl_command" {
   description = "Comando para configurar kubectl"
   value       = module.compute.kubectl_config_command
 }
+
