@@ -133,5 +133,19 @@ variable "apim_circuit_breaker_cooldown_seconds" {
   type        = number
   default     = 30
 }
-# Duplicate removed
-# Internal plumbing variables removed
+
+# ============================================================================
+# EKS COST CONTROL - Variables para encender/apagar EKS
+# ============================================================================
+
+variable "eks_enabled" {
+  description = "Habilitar/deshabilitar el stack de EKS (cluster, NAT, Fargate). Poner en false para ahorrar costos cuando no se necesite."
+  type        = bool
+  default     = false  # Por defecto APAGADO para ahorrar costos
+}
+
+variable "eks_log_retention_days" {
+  description = "Días de retención para logs de EKS (menor = más barato)"
+  type        = number
+  default     = 7
+}
