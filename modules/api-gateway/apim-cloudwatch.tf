@@ -18,7 +18,7 @@ resource "aws_cloudwatch_metric_alarm" "apim_latency_alarm" {
   statistic           = "Average"
   threshold           = 200
   alarm_description   = "Latencia del APIM supera 200ms (requisito ERS)"
-  
+
   dimensions = {
     ApiId = aws_apigatewayv2_api.apim_gateway.id
     Stage = var.environment
@@ -42,7 +42,7 @@ resource "aws_cloudwatch_metric_alarm" "apim_5xx_alarm" {
   statistic           = "Sum"
   threshold           = 10
   alarm_description   = "Errores 5xx detectados en el APIM"
-  
+
   dimensions = {
     ApiId = aws_apigatewayv2_api.apim_gateway.id
     Stage = var.environment
@@ -66,7 +66,7 @@ resource "aws_cloudwatch_metric_alarm" "apim_4xx_alarm" {
   statistic           = "Sum"
   threshold           = 100
   alarm_description   = "Alto volumen de errores 4xx - posible ataque o problema de clientes"
-  
+
   dimensions = {
     ApiId = aws_apigatewayv2_api.apim_gateway.id
     Stage = var.environment

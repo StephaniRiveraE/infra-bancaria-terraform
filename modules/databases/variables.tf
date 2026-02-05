@@ -42,3 +42,25 @@ variable "rds_security_group_id" {
   description = "ID del security group para RDS (desde módulo networking)"
   type        = string
 }
+
+# ============================================================================
+# ELASTICACHE VARIABLES
+# ============================================================================
+
+variable "elasticache_enabled" {
+  description = "Habilitar/deshabilitar ElastiCache Redis (ahorro ~$50/mes cuando está apagado)"
+  type        = bool
+  default     = false
+}
+
+variable "vpc_id" {
+  description = "ID de la VPC (para crear Security Group de Redis)"
+  type        = string
+  default     = ""
+}
+
+variable "private_subnet_ids" {
+  description = "IDs de las subnets privadas (para subnet group de Redis)"
+  type        = list(string)
+  default     = []
+}

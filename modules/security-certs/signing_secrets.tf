@@ -15,7 +15,7 @@ resource "aws_secretsmanager_secret_version" "bank_jws_placeholder" {
   for_each      = toset(var.bancos)
   secret_id     = aws_secretsmanager_secret.bank_jws_public_keys[each.key].id
   secret_string = "PENDING_UPLOAD_PUBLIC_KEY_PEM"
-  
+
   lifecycle {
     ignore_changes = [secret_string]
   }
