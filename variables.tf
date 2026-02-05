@@ -167,7 +167,7 @@ variable "elasticache_enabled" {
 variable "alarm_email" {
   description = "Email para recibir notificaciones de alarmas CloudWatch"
   type        = string
-  default     = "" # Dejar vacío si no se quieren emails
+  default     = "awsproyecto26@gmail.com"
 }
 
 variable "enable_alarms" {
