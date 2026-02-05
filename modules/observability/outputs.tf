@@ -29,3 +29,22 @@ output "alarm_count" {
     1                                    # RabbitMQ DLQ
   ) : 0
 }
+
+# ============================================================================
+# GRAFANA CLOUD - Credenciales
+# ============================================================================
+
+output "grafana_credentials_secret_arn" {
+  description = "ARN del secreto con credenciales para Grafana Cloud"
+  value       = aws_secretsmanager_secret.grafana_credentials.arn
+}
+
+output "grafana_iam_user" {
+  description = "Nombre del usuario IAM para Grafana"
+  value       = aws_iam_user.grafana_reader.name
+}
+
+output "grafana_setup_instructions" {
+  description = "Instrucciones para configurar Grafana"
+  value       = "1. Ve a AWS Secrets Manager → grafana-cloudwatch-credentials. 2. Copia access_key_id y secret_access_key. 3. En Grafana Cloud → Data Sources → CloudWatch → pega las credenciales."
+}
