@@ -22,7 +22,7 @@ resource "aws_apigatewayv2_api" "apim_gateway" {
 resource "aws_apigatewayv2_vpc_link" "apim_vpc_link" {
   name               = "apim-vpc-link"
   security_group_ids = [var.apim_vpc_link_security_group_id]
-  
+
   subnet_ids = var.private_subnet_ids
 
   tags = merge(var.common_tags, {

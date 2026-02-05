@@ -37,7 +37,7 @@ resource "aws_cognito_resource_server" "switch_resource" {
   identifier   = "https://switch-api.com"
   name         = "Switch API Resource"
   user_pool_id = aws_cognito_user_pool.banca_pool.id
-  
+
   scope {
     scope_name        = "transfers.write"
     scope_description = "Permite transacciones"

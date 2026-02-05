@@ -12,10 +12,10 @@ resource "aws_eks_cluster" "bancario" {
 
   vpc_config {
     subnet_ids = concat(var.private_subnet_ids, var.public_subnet_ids)
-    
+
     endpoint_private_access = true
     endpoint_public_access  = true
-    
+
     security_group_ids = [aws_security_group.eks_cluster_sg[0].id]
   }
 
@@ -35,7 +35,7 @@ resource "aws_eks_cluster" "bancario" {
 resource "aws_cloudwatch_log_group" "eks_cluster" {
   count             = var.eks_enabled ? 1 : 0
   name              = "/aws/eks/eks-banca-ecosistema/cluster"
-  retention_in_days = var.eks_log_retention_days  # OPTIMIZACIÓN: Retención reducida
+  retention_in_days = var.eks_log_retention_days # OPTIMIZACIÓN: Retención reducida
 
   tags = merge(var.common_tags, {
     Name = "eks-cluster-logs"

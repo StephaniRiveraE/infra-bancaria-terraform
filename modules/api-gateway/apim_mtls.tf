@@ -32,7 +32,7 @@ resource "aws_s3_object" "truststore_pem" {
   bucket  = aws_s3_bucket.mtls_truststore.id
   key     = "truststore.pem"
   content = tls_self_signed_cert.internal_ca_cert.cert_pem
-  
+
   tags = merge(var.common_tags, {
     Name        = "truststore-file"
     Description = "Contains Root CA for Client Cert Validation"

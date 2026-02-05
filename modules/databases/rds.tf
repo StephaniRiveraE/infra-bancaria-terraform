@@ -8,27 +8,27 @@ resource "random_password" "db_passwords" {
 resource "aws_db_instance" "rds_instances" {
   for_each = var.entidades
 
-  identifier             = "rds-${each.key}"
-  allocated_storage      = var.rds_storage_gb
-  db_name                = each.value
-  engine                 = "postgres"
-  engine_version         = var.rds_engine_version
-  instance_class         = var.rds_instance_class
-  
-  username               = var.rds_username
-  password               = random_password.db_passwords[each.key].result
+  identifier        = "rds-${each.key}"
+  allocated_storage = var.rds_storage_gb
+  db_name           = each.value
+  engine            = "postgres"
+  engine_version    = var.rds_engine_version
+  instance_class    = var.rds_instance_class
+
+  username = var.rds_username
+  password = random_password.db_passwords[each.key].result
 
   db_subnet_group_name   = var.db_subnet_group_name
   vpc_security_group_ids = [var.rds_security_group_id]
-  
-  publicly_accessible    = false 
-  storage_encrypted      = true  
-  skip_final_snapshot    = true
+
+  publicly_accessible = false
+  storage_encrypted   = true
+  skip_final_snapshot = true
 
   # Ignorar cambios que causan errores cuando RDS está stopped
   # AWS no permite modificar RDS en estado stopped
   lifecycle {
-    ignore_changes = all  # Ignorar TODOS los cambios para evitar errores con RDS stopped
+    ignore_changes = all # Ignorar TODOS los cambios para evitar errores con RDS stopped
   }
 
   tags = merge(var.common_tags, {
@@ -40,8 +40,8 @@ resource "aws_secretsmanager_secret" "db_secrets" {
   for_each    = var.entidades
   name        = "rds-secret-${each.key}-v2"
   description = "Credenciales maestras para la instancia RDS de ${each.key}"
-  
-  recovery_window_in_days = 7 
+
+  recovery_window_in_days = 7
 
   tags = merge(var.common_tags, {
     Domain = title(each.key)
@@ -51,7 +51,7 @@ resource "aws_secretsmanager_secret" "db_secrets" {
 resource "aws_secretsmanager_secret_version" "db_credentials" {
   for_each  = aws_secretsmanager_secret.db_secrets
   secret_id = each.value.id
-  
+
   secret_string = jsonencode({
     username = var.rds_username
     password = random_password.db_passwords[each.key].result

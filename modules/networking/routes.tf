@@ -12,7 +12,7 @@ resource "aws_eip" "nat_eip" {
 resource "aws_nat_gateway" "nat" {
   count         = var.eks_enabled ? 1 : 0
   allocation_id = aws_eip.nat_eip[0].id
-  subnet_id     = aws_subnet.public_az1.id 
+  subnet_id     = aws_subnet.public_az1.id
   tags          = merge(var.common_tags, { Name = "main-nat-gateway" })
 
   depends_on = [aws_internet_gateway.igw]
