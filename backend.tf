@@ -1,10 +1,10 @@
 terraform {
   backend "s3" {
-    bucket         = "banca-ecosistema-tfstate-512be32e" 
-    key            = "infra/terraform.tfstate"           
-    region         = "us-east-2"                         
-    dynamodb_table = "terraform-lock-table"              
-    encrypt        = true                                
+    bucket         = "banca-ecosistema-tfstate-512be32e"
+    key            = "infra/terraform.tfstate"
+    region         = "us-east-2"
+    dynamodb_table = "terraform-lock-table"
+    encrypt        = true
   }
 }
 

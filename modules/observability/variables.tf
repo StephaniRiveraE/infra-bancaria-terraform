@@ -1,0 +1,67 @@
+# ============================================================================
+# MÓDULO OBSERVABILIDAD - Variables de entrada
+# Fase 5: Dashboards, Alarmas, SNS
+# ============================================================================
+
+variable "common_tags" {
+  description = "Tags comunes para todos los recursos"
+  type        = map(string)
+}
+
+variable "environment" {
+  description = "Ambiente (dev, staging, prod)"
+  type        = string
+  default     = "dev"
+}
+
+variable "alarm_email" {
+  description = "Email para recibir notificaciones de alarmas"
+  type        = string
+  default     = ""
+}
+
+variable "enable_alarms" {
+  description = "Habilitar creación de alarmas CloudWatch"
+  type        = bool
+  default     = true
+}
+
+# Variables para métricas de RDS
+variable "rds_instance_ids" {
+  description = "Lista de identificadores de instancias RDS para monitorear"
+  type        = list(string)
+  default     = ["rds-arcbank", "rds-bantec", "rds-nexus", "rds-ecusol", "rds-switch"]
+}
+
+# Variables para métricas de API Gateway
+variable "api_gateway_id" {
+  description = "ID del API Gateway para métricas"
+  type        = string
+  default     = ""
+}
+
+variable "api_gateway_stage" {
+  description = "Stage del API Gateway"
+  type        = string
+  default     = "dev"
+}
+
+# Variables para métricas de RabbitMQ
+variable "rabbitmq_broker_name" {
+  description = "Nombre del broker RabbitMQ"
+  type        = string
+  default     = "switch-rabbitmq"
+}
+
+# Umbrales de alarmas
+variable "rds_cpu_threshold" {
+  description = "Umbral de CPU para alarmas de RDS (%)"
+  type        = number
+  default     = 80
+}
+
+variable "api_5xx_threshold" {
+  description = "Umbral de errores 5xx por minuto para API Gateway"
+  type        = number
+  default     = 10
+}

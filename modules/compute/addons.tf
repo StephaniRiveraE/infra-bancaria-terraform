@@ -7,7 +7,7 @@ resource "aws_eks_addon" "vpc_cni" {
   count        = var.eks_enabled ? 1 : 0
   cluster_name = aws_eks_cluster.bancario[0].name
   addon_name   = "vpc-cni"
-  
+
   resolve_conflicts_on_create = "OVERWRITE"
   resolve_conflicts_on_update = "OVERWRITE"
 
@@ -20,7 +20,7 @@ resource "aws_eks_addon" "kube_proxy" {
   count        = var.eks_enabled ? 1 : 0
   cluster_name = aws_eks_cluster.bancario[0].name
   addon_name   = "kube-proxy"
-  
+
   resolve_conflicts_on_create = "OVERWRITE"
   resolve_conflicts_on_update = "OVERWRITE"
 
@@ -33,7 +33,7 @@ resource "aws_eks_addon" "coredns" {
   count        = var.eks_enabled ? 1 : 0
   cluster_name = aws_eks_cluster.bancario[0].name
   addon_name   = "coredns"
-  
+
   resolve_conflicts_on_create = "OVERWRITE"
   resolve_conflicts_on_update = "OVERWRITE"
 
@@ -67,7 +67,7 @@ resource "aws_eks_addon" "pod_identity" {
   count        = var.eks_enabled ? 1 : 0
   cluster_name = aws_eks_cluster.bancario[0].name
   addon_name   = "eks-pod-identity-agent"
-  
+
   resolve_conflicts_on_create = "OVERWRITE"
   resolve_conflicts_on_update = "OVERWRITE"
 
