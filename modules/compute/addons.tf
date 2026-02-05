@@ -1,9 +1,11 @@
 # ============================================================================
 # EKS ADDONS - Componentes esenciales del clúster
+# CONDICIONAL: Solo se crean si eks_enabled = true
 # ============================================================================
 
 resource "aws_eks_addon" "vpc_cni" {
-  cluster_name = aws_eks_cluster.bancario.name
+  count        = var.eks_enabled ? 1 : 0
+  cluster_name = aws_eks_cluster.bancario[0].name
   addon_name   = "vpc-cni"
   
   resolve_conflicts_on_create = "OVERWRITE"
@@ -15,7 +17,8 @@ resource "aws_eks_addon" "vpc_cni" {
 }
 
 resource "aws_eks_addon" "kube_proxy" {
-  cluster_name = aws_eks_cluster.bancario.name
+  count        = var.eks_enabled ? 1 : 0
+  cluster_name = aws_eks_cluster.bancario[0].name
   addon_name   = "kube-proxy"
   
   resolve_conflicts_on_create = "OVERWRITE"
@@ -27,7 +30,8 @@ resource "aws_eks_addon" "kube_proxy" {
 }
 
 resource "aws_eks_addon" "coredns" {
-  cluster_name = aws_eks_cluster.bancario.name
+  count        = var.eks_enabled ? 1 : 0
+  cluster_name = aws_eks_cluster.bancario[0].name
   addon_name   = "coredns"
   
   resolve_conflicts_on_create = "OVERWRITE"
@@ -60,7 +64,8 @@ resource "aws_eks_addon" "coredns" {
 }
 
 resource "aws_eks_addon" "pod_identity" {
-  cluster_name = aws_eks_cluster.bancario.name
+  count        = var.eks_enabled ? 1 : 0
+  cluster_name = aws_eks_cluster.bancario[0].name
   addon_name   = "eks-pod-identity-agent"
   
   resolve_conflicts_on_create = "OVERWRITE"

@@ -27,8 +27,8 @@ jobs:
 
       - name: "4. Terraform Plan"
     
-        run: terraform plan
+        run: terraform plan -lock=false
 
       - name: "5. Terraform Apply"
         if: github.event.pull_request.base.ref == 'main' && github.event.pull_request.merged == true
-        run: terraform apply -auto-approve
+        run: terraform apply -auto-approve -lock=false

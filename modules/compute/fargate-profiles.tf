@@ -1,5 +1,6 @@
 # ============================================================================
 # FARGATE PROFILES - Perfiles serverless para cada namespace
+# CONDICIONAL: Solo se crean si eks_enabled = true
 # ============================================================================
 
 locals {
@@ -7,9 +8,9 @@ locals {
 }
 
 resource "aws_eks_fargate_profile" "entities" {
-  for_each = toset(local.entity_namespaces)
+  for_each = var.eks_enabled ? toset(local.entity_namespaces) : toset([])
 
-  cluster_name           = aws_eks_cluster.bancario.name
+  cluster_name           = aws_eks_cluster.bancario[0].name
   fargate_profile_name   = "fargate-${each.key}"
   pod_execution_role_arn = var.fargate_execution_role_arn
 
@@ -29,7 +30,8 @@ resource "aws_eks_fargate_profile" "entities" {
 }
 
 resource "aws_eks_fargate_profile" "kube_system" {
-  cluster_name           = aws_eks_cluster.bancario.name
+  count                  = var.eks_enabled ? 1 : 0
+  cluster_name           = aws_eks_cluster.bancario[0].name
   fargate_profile_name   = "fargate-kube-system"
   pod_execution_role_arn = var.fargate_execution_role_arn
 
@@ -51,7 +53,8 @@ resource "aws_eks_fargate_profile" "kube_system" {
 }
 
 resource "aws_eks_fargate_profile" "aws_lb_controller" {
-  cluster_name           = aws_eks_cluster.bancario.name
+  count                  = var.eks_enabled ? 1 : 0
+  cluster_name           = aws_eks_cluster.bancario[0].name
   fargate_profile_name   = "fargate-aws-lb-controller"
   pod_execution_role_arn = var.fargate_execution_role_arn
 

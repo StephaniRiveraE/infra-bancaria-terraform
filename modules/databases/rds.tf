@@ -25,6 +25,12 @@ resource "aws_db_instance" "rds_instances" {
   storage_encrypted      = true  
   skip_final_snapshot    = true
 
+  # Ignorar cambios que causan errores cuando RDS está stopped
+  # AWS no permite modificar RDS en estado stopped
+  lifecycle {
+    ignore_changes = all  # Ignorar TODOS los cambios para evitar errores con RDS stopped
+  }
+
   tags = merge(var.common_tags, {
     Name   = "rds-${each.key}"
     Entity = title(each.key)

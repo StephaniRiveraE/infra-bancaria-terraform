@@ -1,15 +1,18 @@
 # ============================================================================
 # AWS LOAD BALANCER CONTROLLER - Ingress con ALB
+# CONDICIONAL: Solo se crea si eks_enabled = true
 # ============================================================================
 
 data "tls_certificate" "eks" {
-  url = aws_eks_cluster.bancario.identity[0].oidc[0].issuer
+  count = var.eks_enabled ? 1 : 0
+  url   = aws_eks_cluster.bancario[0].identity[0].oidc[0].issuer
 }
 
 resource "aws_iam_openid_connect_provider" "eks" {
+  count           = var.eks_enabled ? 1 : 0
   client_id_list  = ["sts.amazonaws.com"]
-  thumbprint_list = [data.tls_certificate.eks.certificates[0].sha1_fingerprint]
-  url             = aws_eks_cluster.bancario.identity[0].oidc[0].issuer
+  thumbprint_list = [data.tls_certificate.eks[0].certificates[0].sha1_fingerprint]
+  url             = aws_eks_cluster.bancario[0].identity[0].oidc[0].issuer
 
   tags = merge(var.common_tags, {
     Name = "eks-oidc-provider"
@@ -17,7 +20,8 @@ resource "aws_iam_openid_connect_provider" "eks" {
 }
 
 resource "aws_iam_role" "alb_controller" {
-  name = "eks-alb-controller-role"
+  count = var.eks_enabled ? 1 : 0
+  name  = "eks-alb-controller-role"
 
   assume_role_policy = jsonencode({
     Version = "2012-10-17"
@@ -25,12 +29,12 @@ resource "aws_iam_role" "alb_controller" {
       Action = "sts:AssumeRoleWithWebIdentity"
       Effect = "Allow"
       Principal = {
-        Federated = aws_iam_openid_connect_provider.eks.arn
+        Federated = aws_iam_openid_connect_provider.eks[0].arn
       }
       Condition = {
         StringEquals = {
-          "${replace(aws_iam_openid_connect_provider.eks.url, "https://", "")}:sub" = "system:serviceaccount:kube-system:aws-load-balancer-controller"
-          "${replace(aws_iam_openid_connect_provider.eks.url, "https://", "")}:aud" = "sts.amazonaws.com"
+          "${replace(aws_iam_openid_connect_provider.eks[0].url, "https://", "")}:sub" = "system:serviceaccount:kube-system:aws-load-balancer-controller"
+          "${replace(aws_iam_openid_connect_provider.eks[0].url, "https://", "")}:aud" = "sts.amazonaws.com"
         }
       }
     }]
@@ -42,6 +46,7 @@ resource "aws_iam_role" "alb_controller" {
 }
 
 resource "aws_iam_policy" "alb_controller" {
+  count       = var.eks_enabled ? 1 : 0
   name        = "AWSLoadBalancerControllerIAMPolicy"
   description = "IAM policy for AWS Load Balancer Controller"
 
@@ -160,6 +165,7 @@ resource "aws_iam_policy" "alb_controller" {
 }
 
 resource "aws_iam_role_policy_attachment" "alb_controller" {
-  policy_arn = aws_iam_policy.alb_controller.arn
-  role       = aws_iam_role.alb_controller.name
+  count      = var.eks_enabled ? 1 : 0
+  policy_arn = aws_iam_policy.alb_controller[0].arn
+  role       = aws_iam_role.alb_controller[0].name
 }
