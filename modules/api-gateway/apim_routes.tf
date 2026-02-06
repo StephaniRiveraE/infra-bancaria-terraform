@@ -64,4 +64,5 @@ resource "aws_apigatewayv2_route" "transfers_post" {
   authorization_type   = "JWT"
   authorizer_id        = aws_apigatewayv2_authorizer.cognito_auth.id
   authorization_scopes = ["https://switch-api.com/transfers.write"]
+  api_key_required     = true  # Requiere X-API-Key header
 }

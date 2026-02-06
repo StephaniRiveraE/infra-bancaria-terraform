@@ -1,11 +1,19 @@
-output "apim_mtls_truststore_bucket" {
-  description = "Bucket S3 donde se almacena el Truststore para mTLS"
-  value       = aws_s3_bucket.mtls_truststore.id
+# ============================================================================
+# API KEYS OUTPUTS
+# ============================================================================
+
+output "banco_api_keys" {
+  description = "API Keys para cada banco"
+  value       = try(aws_apigatewayv2_api_key.banco_api_keys, null) != null ? { for k, v in aws_apigatewayv2_api_key.banco_api_keys : k => v.value } : {}
+  sensitive   = true
 }
 
-output "apim_mtls_truststore_uri" {
-  description = "URI S3 del archivo truststore.pem (usar en API Gateway)"
-  value       = "s3://${aws_s3_bucket.mtls_truststore.id}/${aws_s3_object.truststore_pem.key}"
+output "banco_api_keys_secrets_arns" {
+  description = "ARNs de Secrets Manager con las API Keys"
+  value       = try(aws_secretsmanager_secret.banco_api_keys_secrets, null) != null ? { for k, v in aws_secretsmanager_secret.banco_api_keys_secrets : k => v.arn } : {}
 }
 
-# Output removed (belongs to security-certs module)
+output "usage_plan_id" {
+  description = "ID del Usage Plan"
+  value       = try(aws_apigatewayv2_usage_plan.banco_usage_plan.id, null)
+}
