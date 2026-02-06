@@ -1,11 +1,23 @@
-output "apim_mtls_truststore_bucket" {
-  description = "Bucket S3 donde se almacena el Truststore para mTLS"
-  value       = aws_s3_bucket.mtls_truststore.id
+# ============================================================================
+# API GATEWAY OUTPUTS
+# ============================================================================
+
+output "apim_gateway_endpoint" {
+  description = "Endpoint HTTPS del API Gateway"
+  value       = aws_apigatewayv2_api.apim_gateway.api_endpoint
 }
 
-output "apim_mtls_truststore_uri" {
-  description = "URI S3 del archivo truststore.pem (usar en API Gateway)"
-  value       = "s3://${aws_s3_bucket.mtls_truststore.id}/${aws_s3_object.truststore_pem.key}"
+output "apim_gateway_id" {
+  description = "ID del API Gateway"
+  value       = aws_apigatewayv2_api.apim_gateway.id
 }
 
-# Output removed (belongs to security-certs module)
+output "apim_stage_name" {
+  description = "Nombre del stage"
+  value       = aws_apigatewayv2_stage.apim_stage.name
+}
+
+output "apim_vpc_link_id" {
+  description = "ID del VPC Link"
+  value       = aws_apigatewayv2_vpc_link.apim_vpc_link.id
+}
