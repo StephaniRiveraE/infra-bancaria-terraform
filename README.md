@@ -33,7 +33,7 @@ Este ecosistema bancario soporta:
 
 ### Objetivos Clave
 
-1. **Seguridad Regulatoria:** Cumplimiento de normativas bancarias (mTLS, OAuth 2.0, Firmas Digitales)
+1. **Seguridad Regulatoria:** Cumplimiento de normativas bancarias (OAuth 2.0, API Keys, Firmas Digitales)
 2. **Alta Disponibilidad:** Multi-AZ deployment
 3. **Costo-Eficiencia:** Uso de servicios PaaS y Free Tier
 4. **Escalabilidad:** Arquitectura preparada para crecimiento
@@ -62,7 +62,7 @@ graph TB
         end
         
         subgraph "Private Subnets"
-            APIM[API Gateway + mTLS]
+            APIM[API Gateway + OAuth JWT]
             EKS[EKS Cluster]
             SWITCH[Switch Microservices]
             RDS[(RDS PostgreSQL)]
@@ -73,10 +73,10 @@ graph TB
         SECRETS[Secrets Manager]
     end
     
-    B1 -->|mTLS + OAuth| APIM
-    B2 -->|mTLS + OAuth| APIM
-    B3 -->|mTLS + OAuth| APIM
-    B4 -->|mTLS + OAuth| APIM
+    B1 -->|OAuth JWT + API Key| APIM
+    B2 -->|OAuth JWT + API Key| APIM
+    B3 -->|OAuth JWT + API Key| APIM
+    B4 -->|OAuth JWT + API Key| APIM
     
     APIM -->|JWT Validation| COGNITO
     APIM -->|VPC Link| ALB
@@ -90,10 +90,11 @@ graph TB
 
 | Capa | Tecnología | Propósito |
 |------|------------|-----------|
-| **Transporte** | mTLS 1.3 | Autenticación mutua con certificados |
+| **Transporte** | TLS 1.2+ | Cifrado HTTPS |
 | **Identidad** | OAuth 2.0 (Cognito) | Tokens JWT para M2M |
+| **Autorización** | API Keys | Rate limiting y control de acceso |
 | **Integridad** | JWS (RS256) | Firmas digitales bidireccionales |
-| **Red** | Security Groups | Túnel cerrado Backend ← APIM |
+| **Red** | Security Groups | Aislamiento de red Backend ← APIM |
 
 ---
 
@@ -118,7 +119,7 @@ infra-bancaria-terraform/
     ├── messaging/             # SQS FIFO
     ├── compute/               # EKS + Fargate Profiles
     ├── security-certs/        # Cognito, Secrets, Llaves JWS
-    └── api-gateway/           # APIM, mTLS, Circuit Breaker
+    └── api-gateway/           # APIM, OAuth JWT, Circuit Breaker
 ```
 
 ### Módulos Implementados
@@ -216,7 +217,7 @@ infra-bancaria-terraform/
 
 #### Security
 - ✅ Cognito User Pool + 4 Clients
-- ✅ mTLS Truststore (S3)
+- ✅ API Keys con Usage Plans
 - ✅ Llaves JWS (Secrets Manager)
 - ✅ API Gateway con JWT Authorizer
 
@@ -228,9 +229,9 @@ infra-bancaria-terraform/
 
 | Requisito | Descripción | Implementación | Costo |
 |-----------|-------------|----------------|-------|
-| **RNF-SEC-01** | mTLS 1.3 | CA auto-generada + S3 Truststore | $0 |
-| **RNF-SEC-02** | Firma JWS (Entrada) | Secrets Manager + Validación en Switch | $1.60/mes |
-| **RNF-SEC-03** | OAuth 2.0 M2M | Cognito User Pool + JWT | $0 |
+| **RNF-SEC-01** | OAuth 2.0 M2M | Cognito User Pool + JWT Authorizer | $0 |
+| **RNF-SEC-02** | API Keys | API Gateway + Secrets Manager | $1.60/mes |
+| **RNF-SEC-03** | Firma JWS (Entrada) | Secrets Manager + Validación en Switch | $1.60/mes |
 | **RNF-SEC-04** | Firma Bidireccional | Llaves RSA del Switch | $0.40/mes |
 | **RNF-SEC-05** | Rotación Automática | Terraform `replace` | $0 |
 
@@ -247,8 +248,8 @@ sequenceDiagram
     Banco->>Cognito: 1. POST /oauth2/token (Client ID + Secret)
     Cognito-->>Banco: 2. JWT Access Token
     
-    Banco->>APIM: 3. POST /transfers + JWT + mTLS Cert
-    APIM->>APIM: 4. Validar Certificado (Truststore S3)
+    Banco->>APIM: 3. POST /transfers + JWT + API Key
+    APIM->>APIM: 4. Validar API Key
     APIM->>Cognito: 5. Validar JWT
     Cognito-->>APIM: 6. Token válido
     
@@ -269,6 +270,10 @@ sequenceDiagram
 | Nombre | Propósito | Valor Inicial |
 |--------|-----------|---------------|
 | `switch/internal-api-secret-dev` | Header interno | Auto-generado |
+| `apim/api-keys/arcbank-key` | API Key ArcBank | Auto-generado |
+| `apim/api-keys/bantec-key` | API Key Bantec | Auto-generado |
+| `apim/api-keys/nexus-key` | API Key Nexus | Auto-generado |
+| `apim/api-keys/ecusol-key` | API Key Ecusol | Auto-generado |
 | `apim/jws/arcbank-public-key` | Validar ArcBank | `PENDING_UPLOAD` |
 | `apim/jws/bantec-public-key` | Validar Bantec | `PENDING_UPLOAD` |
 | `apim/jws/nexus-public-key` | Validar Nexus | `PENDING_UPLOAD` |
@@ -369,24 +374,13 @@ terraform output apim_gateway_endpoint
 
 Cada banco debe proveer los siguientes archivos:
 
-#### 1. Certificado Cliente para mTLS
-- **Archivo:** `{banco}_client.crt`
-- **Formato:** X.509 PEM
-- **Algoritmo:** RSA 2048 bits mínimo
-- **Propósito:** Autenticación del canal
-
-#### 2. CA Root
-- **Archivo:** `{banco}_ca_root.crt`
-- **Formato:** PEM
-- **Propósito:** Añadir a Truststore S3
-
-#### 3. Llave Pública JWS
+#### 1. Llave Pública JWS
 - **Archivo:** `{banco}_public_key.pem`
 - **Formato:** PEM (RSA Public Key)
 - **Algoritmo:** RSA 2048 (RS256)
 - **Propósito:** Validar firmas digitales
 
-#### 4. IPs de Origen (Opcional)
+#### 2. IPs de Origen (Opcional)
 - **Archivo:** `{banco}_ips.txt`
 - **Contenido:** Lista de IPs públicas estáticas
 - **Propósito:** Whitelisting
@@ -395,8 +389,10 @@ Cada banco debe proveer los siguientes archivos:
 
 1. **Client ID** de Cognito
 2. **Client Secret** de Cognito
-3. **Token Endpoint:** `https://auth-banca-digiconecu-dev-{random}.auth.us-east-2.amazoncognito.com/oauth2/token`
-4. **Llave Pública del Switch:** Para validar respuestas firmadas
+3. **API Key** para API Gateway
+4. **Token Endpoint:** `https://auth-banca-digiconecu-dev-{random}.auth.us-east-2.amazoncognito.com/oauth2/token`
+5. **API Gateway URL:** `https://{api-id}.execute-api.us-east-2.amazonaws.com/dev`
+6. **Llave Pública del Switch:** Para validar respuestas firmadas
 
 ### Flujo de Autenticación
 
@@ -432,23 +428,16 @@ curl -X POST https://api.switch.com/api/v2/switch/transfers \
 
 ## 🔧 Operaciones y Mantenimiento
 
-### Actualizar Truststore mTLS
+### Gestionar API Keys
 
 ```bash
-# 1. Descargar truststore actual
-aws s3 cp s3://mtls-truststore-digiconecu-dev/truststore.pem .
+# Ver API Keys
+terraform output banco_api_keys
 
-# 2. Añadir CA del nuevo banco
-cat nuevo_banco_ca.crt >> truststore.pem
-
-# 3. Subir actualizado
-aws s3 cp truststore.pem s3://mtls-truststore-digiconecu-dev/
-
-# 4. Verificar versión
-aws s3api head-object \
-  --bucket mtls-truststore-digiconecu-dev \
-  --key truststore.pem \
-  --query VersionId
+# Obtener API Key desde Secrets Manager
+aws secretsmanager get-secret-value \
+  --secret-id apim/api-keys/arcbank-key \
+  --query SecretString --output text
 ```
 
 ### Actualizar Llaves Públicas JWS
@@ -462,13 +451,16 @@ aws secretsmanager put-secret-value \
 
 ### Rotación de Credenciales (RNF-SEC-05)
 
-#### Certificados mTLS (Cada 90 días)
+#### API Keys (Cuando sea necesario)
 
 ```bash
-# Regenerar CA
-terraform apply -replace="module.api_gateway.tls_self_signed_cert.internal_ca_cert"
+# Regenerar API Key de un banco
+terraform apply -replace='module.api_gateway.aws_apigatewayv2_api_key.banco_api_keys["ArcBank"]'
 
-# Notificar a bancos
+# Obtener nueva API Key
+terraform output -json banco_api_keys | jq -r '.ArcBank'
+
+# Notificar al banco
 ```
 
 #### Llaves JWS (Cada 180 días)
@@ -564,7 +556,7 @@ aws secretsmanager get-secret-value \
 
 ### Documentación AWS
 
-- [API Gateway mTLS](https://docs.aws.amazon.com/apigateway/latest/developerguide/rest-api-mutual-tls.html)
+- [API Gateway HTTP APIs](https://docs.aws.amazon.com/apigateway/latest/developerguide/http-api.html)
 - [Cognito OAuth 2.0](https://docs.aws.amazon.com/cognito/latest/developerguide/cognito-user-pools-app-integration.html)
 - [EKS Best Practices](https://aws.github.io/aws-eks-best-practices/)
 - [Fargate Pricing](https://aws.amazon.com/fargate/pricing/)
@@ -573,7 +565,7 @@ aws secretsmanager get-secret-value \
 
 - [JWS RFC 7515](https://datatracker.ietf.org/doc/html/rfc7515)
 - [OAuth 2.0 RFC 6749](https://datatracker.ietf.org/doc/html/rfc6749)
-- [mTLS Best Practices](https://www.cloudflare.com/learning/access-management/what-is-mutual-tls/)
+- [API Keys Best Practices](https://swagger.io/docs/specification/authentication/api-keys/)
 
 ### Terraform
 
