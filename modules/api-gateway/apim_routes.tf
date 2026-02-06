@@ -17,7 +17,7 @@ resource "aws_lb" "apim_backend_alb" {
   load_balancer_type = "application"
   security_groups    = [var.backend_security_group_id]
   subnets            = var.private_subnet_ids
-  tags = merge(var.common_tags, { Name = "alb-apim-backend" })
+  tags               = merge(var.common_tags, { Name = "alb-apim-backend" })
 }
 resource "aws_lb_target_group" "apim_backend_tg" {
   name        = "apim-backend-tg"

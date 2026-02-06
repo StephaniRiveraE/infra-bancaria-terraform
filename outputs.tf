@@ -119,3 +119,36 @@ output "eks_kubectl_command" {
   value       = module.compute.kubectl_config_command
 }
 
+# ============================================================================
+# Outputs de ElastiCache (Redis) - FASE 2
+# ============================================================================
+
+output "elasticache_enabled" {
+  description = "Indica si ElastiCache Redis está habilitado (ahorro ~$50/mes cuando está apagado)"
+  value       = module.databases.elasticache_enabled
+}
+
+output "redis_endpoint" {
+  description = "Endpoint del cluster Redis del Switch (vacío si elasticache_enabled = false)"
+  value       = module.databases.redis_endpoint
+}
+
+# ============================================================================
+# Outputs de Observabilidad - FASE 5
+# ============================================================================
+
+output "sns_alarms_topic_arn" {
+  description = "ARN del topic SNS para alarmas"
+  value       = module.observability.sns_alarms_topic_arn
+}
+
+output "cloudwatch_dashboard_urls" {
+  description = "URLs de los dashboards de CloudWatch"
+  value       = module.observability.dashboard_urls
+}
+
+output "alarm_count" {
+  description = "Número de alarmas CloudWatch creadas"
+  value       = module.observability.alarm_count
+}
+

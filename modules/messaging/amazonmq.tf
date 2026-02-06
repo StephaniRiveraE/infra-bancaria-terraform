@@ -64,10 +64,10 @@ resource "aws_secretsmanager_secret_version" "rabbitmq_credentials" {
   secret_id = aws_secretsmanager_secret.rabbitmq_credentials.id
 
   secret_string = jsonencode({
-    username     = "mqadmin"
-    password     = random_password.rabbitmq_password.result
-    broker_id    = aws_mq_broker.rabbitmq.id
-    console_url  = "https://${aws_mq_broker.rabbitmq.instances[0].console_url}"
-    amqps_url    = "amqps://${aws_mq_broker.rabbitmq.instances[0].endpoints[0]}"
+    username    = "mqadmin"
+    password    = random_password.rabbitmq_password.result
+    broker_id   = aws_mq_broker.rabbitmq.id
+    console_url = "https://${aws_mq_broker.rabbitmq.instances[0].console_url}"
+    amqps_url   = "amqps://${aws_mq_broker.rabbitmq.instances[0].endpoints[0]}"
   })
 }

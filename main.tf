@@ -10,7 +10,7 @@ module "networking" {
   vpc_cidr           = var.vpc_cidr
   availability_zones = var.availability_zones
   common_tags        = var.common_tags
-  eks_enabled        = var.eks_enabled  # Controla creación de NAT Gateway
+  eks_enabled        = var.eks_enabled # Controla creación de NAT Gateway
 }
 
 # Módulo 2: IAM Roles (EKS Cluster, Fargate Execution)
@@ -28,7 +28,7 @@ module "storage" {
   common_tags = var.common_tags
 }
 
-# Módulo 4: Databases (RDS PostgreSQL, DynamoDB)
+# Módulo 4: Databases (RDS PostgreSQL, DynamoDB, ElastiCache)
 module "databases" {
   source = "./modules/databases"
 
@@ -41,8 +41,13 @@ module "databases" {
   common_tags        = var.common_tags
 
   # Dependencias de Networking
-  db_subnet_group_name = module.networking.db_subnet_group_name
+  db_subnet_group_name  = module.networking.db_subnet_group_name
   rds_security_group_id = module.networking.rds_security_group_id
+
+  # ElastiCache (Redis) - Condicional
+  elasticache_enabled = var.elasticache_enabled
+  vpc_id              = module.networking.vpc_id
+  private_subnet_ids  = [module.networking.private_subnet_az1_id, module.networking.private_subnet_az2_id]
 }
 
 # Módulo 5: Messaging (Amazon MQ - RabbitMQ)
@@ -63,10 +68,10 @@ module "compute" {
   vpc_id             = module.networking.vpc_id
   private_subnet_ids = [module.networking.private_subnet_az1_id, module.networking.private_subnet_az2_id]
   public_subnet_ids  = [module.networking.public_subnet_az1_id, module.networking.public_subnet_az2_id]
-  
+
   eks_cluster_role_arn       = module.iam.eks_cluster_role_arn
   fargate_execution_role_arn = module.iam.fargate_execution_role_arn
-  
+
   common_tags            = var.common_tags
   eks_enabled            = var.eks_enabled            # Controla creación del stack EKS
   eks_log_retention_days = var.eks_log_retention_days # Días de retención de logs
@@ -95,13 +100,33 @@ module "api_gateway" {
   common_tags  = var.common_tags
 
   # Variables de Red (Desde el modulo networking)
-  vpc_id                        = module.networking.vpc_id
-  private_subnet_ids            = [module.networking.private_subnet_az1_id, module.networking.private_subnet_az2_id]
-  backend_security_group_id     = module.networking.backend_sg_id 
+  vpc_id                          = module.networking.vpc_id
+  private_subnet_ids              = [module.networking.private_subnet_az1_id, module.networking.private_subnet_az2_id]
+  backend_security_group_id       = module.networking.backend_sg_id
   apim_vpc_link_security_group_id = module.networking.apim_vpc_link_sg_id
-  
+
   # Variables de Seguridad (Desde el modulo security_identity)
   cognito_endpoint      = module.security_identity.cognito_endpoint
   cognito_client_ids    = module.security_identity.cognito_client_ids
   internal_secret_value = module.security_identity.internal_secret_value
+}
+
+# ============================================================================
+# Módulo 9: Observabilidad (CloudWatch Dashboards, Alarmas, SNS) - FASE 5
+# ============================================================================
+module "observability" {
+  source = "./modules/observability"
+
+  common_tags   = var.common_tags
+  environment   = var.environment
+  alarm_email   = var.alarm_email
+  enable_alarms = var.enable_alarms
+
+  # Variables para métricas
+  api_gateway_id    = module.api_gateway.apim_gateway_id
+  api_gateway_stage = var.environment
+
+  # Variables para Container Insights (EKS)
+  eks_enabled      = var.eks_enabled
+  eks_cluster_name = var.eks_enabled ? module.compute.eks_cluster_name : "eks-banca-ecosistema"
 }

@@ -132,11 +132,37 @@ variable "apim_circuit_breaker_cooldown_seconds" {
 variable "eks_enabled" {
   description = "Habilitar/deshabilitar el stack de EKS (cluster, NAT, Fargate). Poner en false para ahorrar costos cuando no se necesite."
   type        = bool
-  default     = false  # Por defecto APAGADO para ahorrar costos
+  default     = false # Por defecto APAGADO para ahorrar costos
 }
 
 variable "eks_log_retention_days" {
   description = "Días de retención para logs de EKS (menor = más barato)"
   type        = number
   default     = 7
+}
+
+# ============================================================================
+# ELASTICACHE COST CONTROL - Variable para encender/apagar Redis
+# ============================================================================
+
+variable "elasticache_enabled" {
+  description = "Habilitar/deshabilitar ElastiCache Redis (ahorro ~$50/mes cuando está apagado)"
+  type        = bool
+  default     = false # Por defecto APAGADO para ahorrar costos
+}
+
+# ============================================================================
+# OBSERVABILITY VARIABLES - Fase 5
+# ============================================================================
+
+variable "alarm_email" {
+  description = "Email para recibir notificaciones de alarmas CloudWatch"
+  type        = string
+  default     = "awsproyecto26@gmail.com"
+}
+
+variable "enable_alarms" {
+  description = "Habilitar creación de alarmas CloudWatch"
+  type        = bool
+  default     = true
 }

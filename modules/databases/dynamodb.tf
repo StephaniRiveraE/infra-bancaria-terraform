@@ -5,7 +5,7 @@ resource "aws_dynamodb_table" "switch_directorio" {
 
   attribute {
     name = "institucion_id"
-    type = "S" 
+    type = "S"
   }
 
   tags = merge(var.common_tags, {
@@ -16,8 +16,8 @@ resource "aws_dynamodb_table" "switch_directorio" {
 }
 
 resource "aws_dynamodb_table" "sucursales_tables" {
-  for_each     = toset(var.bancos)
-  
+  for_each = toset(var.bancos)
+
   name         = "${each.key}-sucursales-geo"
   billing_mode = "PAY_PER_REQUEST"
   hash_key     = "sucursal_id"
