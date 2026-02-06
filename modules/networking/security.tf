@@ -1,6 +1,3 @@
-# Variables removed (using networking/variables.tf)
-
-# 1. Security Group para RDS
 # 1. Security Group para RDS
 resource "aws_security_group" "rds_sg" {
   name        = "rds-bancario-sg"
