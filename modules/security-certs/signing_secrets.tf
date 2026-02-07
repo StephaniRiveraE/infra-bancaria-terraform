@@ -1,8 +1,12 @@
-variable "bancos" {
-  description = "Lista de bancos"
-  type        = list(string)
-  default     = ["ArcBank", "Bantec", "Nexus", "Ecusol"]
-}
+# ============================================================================
+# FIRMA DIGITAL JWS - Llaves para firmar/validar transacciones
+# RNF-SEC-04: Firma digital de transacciones
+# ============================================================================
+
+# ============================================================================
+# SECRETOS PARA LLAVES PÚBLICAS DE LOS BANCOS
+# Los bancos deben subir sus llaves públicas aquí para que el Switch las valide
+# ============================================================================
 
 resource "aws_secretsmanager_secret" "bank_jws_public_keys" {
   for_each    = toset(var.bancos)
@@ -20,6 +24,10 @@ resource "aws_secretsmanager_secret_version" "bank_jws_placeholder" {
     ignore_changes = [secret_string]
   }
 }
+
+# ============================================================================
+# LLAVES DEL SWITCH - Par de llaves RSA para firmar respuestas
+# ============================================================================
 
 resource "tls_private_key" "switch_signing_key" {
   algorithm = "RSA"

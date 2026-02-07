@@ -78,25 +78,47 @@ module "compute" {
 }
 
 # ============================================================================
-# Módulo 7: Seguridad e Identidad (Cognito) - FASE 4 (Refactor)
+# Módulo 7: Seguridad e Identidad (Cognito) - FASE 4
 # ============================================================================
 module "security_identity" {
   source = "./modules/security-certs"
 
   project_name = "Digiconecu"
-  environment  = "dev"
+  environment  = var.environment
   common_tags  = var.common_tags
 }
 
 # ============================================================================
-# Módulo 8: API Gateway (Switch Transaccional) - FASE 4 (Refactor)
+# Módulo 8: Observabilidad (CloudWatch Dashboards, Alarmas, SNS) - FASE 5
+# NOTA: Debe crearse ANTES de api_gateway para poder pasar el SNS ARN
+# ============================================================================
+module "observability" {
+  source = "./modules/observability"
+
+  common_tags   = var.common_tags
+  environment   = var.environment
+  alarm_email   = var.alarm_email
+  enable_alarms = var.enable_alarms
+
+  # Variables para métricas - se configuran después con depends_on
+  api_gateway_id    = "" # Se actualiza manualmente o con un segundo apply
+  api_gateway_stage = var.environment
+
+  # Variables para Container Insights (EKS)
+  eks_enabled      = var.eks_enabled
+  eks_cluster_name = var.eks_enabled ? module.compute.eks_cluster_name : "eks-banca-ecosistema"
+}
+
+# ============================================================================
+# Módulo 9: API Gateway (Switch Transaccional) - FASE 4
+# Recibe el SNS Topic de observability para conectar el Circuit Breaker
 # ============================================================================
 module "api_gateway" {
   source = "./modules/api-gateway"
 
   # Variables Generales
   project_name = "Digiconecu"
-  environment  = "dev"
+  environment  = var.environment
   common_tags  = var.common_tags
 
   # Variables de Red (Desde el modulo networking)
@@ -109,24 +131,9 @@ module "api_gateway" {
   cognito_endpoint      = module.security_identity.cognito_endpoint
   cognito_client_ids    = module.security_identity.cognito_client_ids
   internal_secret_value = module.security_identity.internal_secret_value
-}
 
-# ============================================================================
-# Módulo 9: Observabilidad (CloudWatch Dashboards, Alarmas, SNS) - FASE 5
-# ============================================================================
-module "observability" {
-  source = "./modules/observability"
+  # Conexión con Observability - SNS para Circuit Breaker
+  apim_alarm_sns_topic_arn = module.observability.sns_alarms_topic_arn
 
-  common_tags   = var.common_tags
-  environment   = var.environment
-  alarm_email   = var.alarm_email
-  enable_alarms = var.enable_alarms
-
-  # Variables para métricas
-  api_gateway_id    = module.api_gateway.apim_gateway_id
-  api_gateway_stage = var.environment
-
-  # Variables para Container Insights (EKS)
-  eks_enabled      = var.eks_enabled
-  eks_cluster_name = var.eks_enabled ? module.compute.eks_cluster_name : "eks-banca-ecosistema"
+  depends_on = [module.observability]
 }
