@@ -66,24 +66,5 @@ resource "aws_apigatewayv2_stage" "apim_stage" {
   })
 }
 
-output "apim_gateway_endpoint" {
-  description = "Endpoint HTTPS del API Gateway (ya incluye SSL)"
-  value       = aws_apigatewayv2_api.apim_gateway.api_endpoint
-}
-
-output "apim_gateway_id" {
-  description = "ID del API Gateway (para que Brayan configure las rutas)"
-  value       = aws_apigatewayv2_api.apim_gateway.id
-}
-
-output "apim_stage_name" {
-  description = "Nombre del stage (dev/prod)"
-  value       = aws_apigatewayv2_stage.apim_stage.name
-}
-
-output "apim_vpc_link_id" {
-  description = "ID del VPC Link (para integraciones privadas)"
-  value       = aws_apigatewayv2_vpc_link.apim_vpc_link.id
-}
 
 

@@ -152,3 +152,28 @@ output "alarm_count" {
   value       = module.observability.alarm_count
 }
 
+# ============================================================================
+# Outputs de API Gateway y Seguridad (Fase 4)
+# Estos son los datos que debes entregarle a los bancos (ArcBank, Nexus, etc.)
+# ============================================================================
+
+output "switch_api_url" {
+  description = "URL principal del Switch para transacciones"
+  value       = module.api_gateway.apim_gateway_endpoint
+}
+
+output "cognito_auth_url" {
+  description = "URL de autenticación para que los bancos obtengan sus Tokens"
+  value       = "https://${module.security_identity.cognito_endpoint}"
+}
+
+output "internal_api_secret_debug" {
+  description = "Valor del secreto interno (Solo para validación técnica)"
+  value       = module.security_identity.internal_secret_value
+  sensitive   = true
+}
+
+output "switch_public_key_pem" {
+  description = "Llave pública para que los bancos validen la firma del Switch"
+  value       = module.security_identity.switch_signing_public_key_pem
+}

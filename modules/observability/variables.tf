@@ -65,3 +65,17 @@ variable "api_5xx_threshold" {
   type        = number
   default     = 10
 }
+
+# Variables para EKS (Container Insights)
+variable "eks_enabled" {
+  description = "Indica si EKS está habilitado"
+  type        = bool
+  default     = false
+}
+
+variable "eks_cluster_name" {
+  description = "Nombre del cluster EKS"
+  type        = string
+  default     = "eks-banca-ecosistema"
+}
+

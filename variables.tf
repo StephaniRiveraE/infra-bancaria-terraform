@@ -92,17 +92,8 @@ variable "apim_alarm_sns_topic_arn" {
   default     = ""
 }
 
-variable "apim_domain_name" {
-  description = "Dominio personalizado para el API Gateway (requerido para mTLS)"
-  type        = string
-  default     = "api.switch-transaccional.com"
-}
+# mTLS variables removed - Using OAuth JWT + API Keys instead
 
-variable "apim_enable_custom_domain" {
-  description = "Habilitar Custom Domain con mTLS (requiere dominio real y validación DNS)"
-  type        = bool
-  default     = false
-}
 
 variable "apim_backend_port" {
   description = "Puerto del backend"
@@ -167,7 +158,7 @@ variable "elasticache_enabled" {
 variable "alarm_email" {
   description = "Email para recibir notificaciones de alarmas CloudWatch"
   type        = string
-  default     = "" # Dejar vacío si no se quieren emails
+  default     = "awsproyecto26@gmail.com"
 }
 
 variable "enable_alarms" {

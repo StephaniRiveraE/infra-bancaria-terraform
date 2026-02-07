@@ -52,4 +52,5 @@ resource "aws_cognito_user_pool_client" "banco_clients" {
   allowed_oauth_flows          = ["client_credentials"]
   allowed_oauth_scopes         = ["https://switch-api.com/transfers.write"]
   supported_identity_providers = ["COGNITO"]
+  allowed_oauth_flows_user_pool_client = true
 }
