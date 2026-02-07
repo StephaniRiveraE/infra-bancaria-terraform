@@ -1,3 +1,7 @@
+# ============================================================================
+# VARIABLES PRINCIPALES - Infraestructura Bancaria
+# ============================================================================
+
 variable "aws_region" {
   description = "Región de AWS donde se despliega la infraestructura"
   type        = string
@@ -15,6 +19,10 @@ variable "environment" {
   type        = string
   default     = "dev"
 }
+
+# ============================================================================
+# ENTIDADES DEL ECOSISTEMA
+# ============================================================================
 
 variable "entidades" {
   description = "Lista de entidades bancarias del ecosistema"
@@ -34,6 +42,10 @@ variable "bancos" {
   default     = ["arcbank", "bantec", "nexus", "ecusol"]
 }
 
+# ============================================================================
+# NETWORKING
+# ============================================================================
+
 variable "vpc_cidr" {
   description = "CIDR block para la VPC principal"
   type        = string
@@ -45,6 +57,10 @@ variable "availability_zones" {
   type        = list(string)
   default     = ["us-east-2a", "us-east-2b"]
 }
+
+# ============================================================================
+# RDS (BASES DE DATOS)
+# ============================================================================
 
 variable "rds_instance_class" {
   description = "Tipo de instancia para RDS"
@@ -70,6 +86,10 @@ variable "rds_username" {
   default     = "dbadmin"
 }
 
+# ============================================================================
+# TAGS COMUNES
+# ============================================================================
+
 variable "common_tags" {
   description = "Tags que se aplican a todos los recursos"
   type        = map(string)
@@ -80,59 +100,14 @@ variable "common_tags" {
   }
 }
 
-variable "apim_log_retention_days" {
-  description = "Días de retención para logs de CloudWatch del APIM"
-  type        = number
-  default     = 30
-}
-
-variable "apim_alarm_sns_topic_arn" {
-  description = "ARN del SNS Topic para enviar alarmas del APIM (opcional)"
-  type        = string
-  default     = ""
-}
-
-# mTLS variables removed - Using OAuth JWT + API Keys instead
-
-
-variable "apim_backend_port" {
-  description = "Puerto del backend"
-  type        = number
-  default     = 8080
-}
-
-variable "apim_integration_timeout_ms" {
-  description = "Timeout de integración con backend (ms)"
-  type        = number
-  default     = 29000
-}
-
-variable "apim_circuit_breaker_error_threshold" {
-  description = "Errores 5xx para abrir circuit breaker"
-  type        = number
-  default     = 5
-}
-
-variable "apim_circuit_breaker_latency_threshold_ms" {
-  description = "Latencia máxima (ms) antes de abrir circuit breaker"
-  type        = number
-  default     = 4000
-}
-
-variable "apim_circuit_breaker_cooldown_seconds" {
-  description = "Tiempo de enfriamiento (segundos)"
-  type        = number
-  default     = 30
-}
-
 # ============================================================================
-# EKS COST CONTROL - Variables para encender/apagar EKS
+# EKS COST CONTROL
 # ============================================================================
 
 variable "eks_enabled" {
   description = "Habilitar/deshabilitar el stack de EKS (cluster, NAT, Fargate). Poner en false para ahorrar costos cuando no se necesite."
   type        = bool
-  default     = false # Por defecto APAGADO para ahorrar costos
+  default     = false
 }
 
 variable "eks_log_retention_days" {
@@ -142,17 +117,17 @@ variable "eks_log_retention_days" {
 }
 
 # ============================================================================
-# ELASTICACHE COST CONTROL - Variable para encender/apagar Redis
+# ELASTICACHE COST CONTROL
 # ============================================================================
 
 variable "elasticache_enabled" {
   description = "Habilitar/deshabilitar ElastiCache Redis (ahorro ~$50/mes cuando está apagado)"
   type        = bool
-  default     = false # Por defecto APAGADO para ahorrar costos
+  default     = false
 }
 
 # ============================================================================
-# OBSERVABILITY VARIABLES - Fase 5
+# OBSERVABILITY
 # ============================================================================
 
 variable "alarm_email" {

@@ -1,20 +1,7 @@
-variable "apim_circuit_breaker_error_threshold" {
-  description = "Errores 5xx para abrir circuit breaker"
-  type        = number
-  default     = 5
-}
-
-variable "apim_circuit_breaker_latency_threshold_ms" {
-  description = "Latencia máxima (ms) antes de abrir circuit breaker"
-  type        = number
-  default     = 4000
-}
-
-variable "apim_circuit_breaker_cooldown_seconds" {
-  description = "Tiempo de enfriamiento (segundos)"
-  type        = number
-  default     = 30
-}
+# ============================================================================
+# CIRCUIT BREAKER - Patrón de resiliencia para el Switch
+# Este componente usa el SNS topic de alarmas del módulo observability
+# ============================================================================
 
 resource "aws_cloudwatch_metric_alarm" "backend_5xx_errors" {
   alarm_name          = "${var.environment}-switch-backend-5xx-errors"
@@ -33,8 +20,9 @@ resource "aws_cloudwatch_metric_alarm" "backend_5xx_errors" {
     Stage = var.environment
   }
 
-  alarm_actions = [aws_sns_topic.circuit_breaker_alerts.arn]
-  ok_actions    = [aws_sns_topic.circuit_breaker_alerts.arn]
+  # Usa el SNS topic que se pasa desde observability (si está configurado)
+  alarm_actions = var.apim_alarm_sns_topic_arn != "" ? [var.apim_alarm_sns_topic_arn] : []
+  ok_actions    = var.apim_alarm_sns_topic_arn != "" ? [var.apim_alarm_sns_topic_arn] : []
 
   tags = merge(var.common_tags, {
     Name      = "${var.environment}-switch-5xx-alarm"
@@ -59,8 +47,8 @@ resource "aws_cloudwatch_metric_alarm" "backend_high_latency" {
     Stage = var.environment
   }
 
-  alarm_actions = [aws_sns_topic.circuit_breaker_alerts.arn]
-  ok_actions    = [aws_sns_topic.circuit_breaker_alerts.arn]
+  alarm_actions = var.apim_alarm_sns_topic_arn != "" ? [var.apim_alarm_sns_topic_arn] : []
+  ok_actions    = var.apim_alarm_sns_topic_arn != "" ? [var.apim_alarm_sns_topic_arn] : []
 
   tags = merge(var.common_tags, {
     Name      = "${var.environment}-switch-latency-alarm"
@@ -68,14 +56,9 @@ resource "aws_cloudwatch_metric_alarm" "backend_high_latency" {
   })
 }
 
-resource "aws_sns_topic" "circuit_breaker_alerts" {
-  name = "${var.environment}-switch-circuit-breaker-alerts"
-
-  tags = merge(var.common_tags, {
-    Name      = "${var.environment}-circuit-breaker-alerts"
-    Component = "APIM-CircuitBreaker"
-  })
-}
+# ============================================================================
+# DYNAMODB - Estado del Circuit Breaker
+# ============================================================================
 
 resource "aws_dynamodb_table" "circuit_breaker_state" {
   name         = "${var.environment}-switch-circuit-breaker-state"
@@ -97,6 +80,10 @@ resource "aws_dynamodb_table" "circuit_breaker_state" {
     Component = "APIM-CircuitBreaker"
   })
 }
+
+# ============================================================================
+# LAMBDA - Handler del Circuit Breaker
+# ============================================================================
 
 resource "aws_lambda_function" "circuit_breaker_handler" {
   function_name = "${var.environment}-switch-circuit-breaker"
@@ -180,19 +167,26 @@ PYTHON
   }
 }
 
+# Suscripción SNS solo si hay un topic definido
 resource "aws_sns_topic_subscription" "circuit_breaker_lambda" {
-  topic_arn = aws_sns_topic.circuit_breaker_alerts.arn
+  count     = var.apim_alarm_sns_topic_arn != "" ? 1 : 0
+  topic_arn = var.apim_alarm_sns_topic_arn
   protocol  = "lambda"
   endpoint  = aws_lambda_function.circuit_breaker_handler.arn
 }
 
 resource "aws_lambda_permission" "circuit_breaker_sns" {
+  count         = var.apim_alarm_sns_topic_arn != "" ? 1 : 0
   statement_id  = "AllowSNSInvoke"
   action        = "lambda:InvokeFunction"
   function_name = aws_lambda_function.circuit_breaker_handler.function_name
   principal     = "sns.amazonaws.com"
-  source_arn    = aws_sns_topic.circuit_breaker_alerts.arn
+  source_arn    = var.apim_alarm_sns_topic_arn
 }
+
+# ============================================================================
+# IAM - Rol para Lambda del Circuit Breaker
+# ============================================================================
 
 resource "aws_iam_role" "circuit_breaker_lambda_role" {
   name = "${var.environment}-circuit-breaker-lambda-role"
@@ -232,10 +226,9 @@ resource "aws_iam_role_policy" "circuit_breaker_lambda_policy" {
   })
 }
 
-output "circuit_breaker_sns_topic_arn" {
-  description = "ARN del SNS Topic para alertas del Circuit Breaker"
-  value       = aws_sns_topic.circuit_breaker_alerts.arn
-}
+# ============================================================================
+# OUTPUTS
+# ============================================================================
 
 output "circuit_breaker_lambda_arn" {
   description = "ARN de la Lambda del Circuit Breaker"
