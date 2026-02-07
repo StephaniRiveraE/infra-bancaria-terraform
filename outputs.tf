@@ -70,9 +70,6 @@ output "rabbitmq_credentials_secret_arn" {
   sensitive   = true
 }
 
-# NOTA: Los outputs de api-gateway y security-certs se definen
-# directamente en sus archivos .tf dentro de modules/api-gateway/ y modules/security-certs/
-
 # ============================================================================
 # Outputs de Compute (EKS + Fargate) - FASE 3
 # NOTA: Retornan null cuando eks_enabled = false
@@ -153,7 +150,7 @@ output "alarm_count" {
 }
 
 # ============================================================================
-# Outputs de API Gateway y Seguridad (Fase 4)
+# Outputs de API Gateway y Seguridad - FASE 4
 # Estos son los datos que debes entregarle a los bancos (ArcBank, Nexus, etc.)
 # ============================================================================
 
@@ -176,4 +173,9 @@ output "internal_api_secret_debug" {
 output "switch_public_key_pem" {
   description = "Llave pública para que los bancos validen la firma del Switch"
   value       = module.security_identity.switch_signing_public_key_pem
+}
+
+output "api_gateway_id" {
+  description = "ID del API Gateway"
+  value       = module.api_gateway.apim_gateway_id
 }
