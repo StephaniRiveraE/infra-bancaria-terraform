@@ -33,7 +33,7 @@ resource "aws_cloudwatch_dashboard" "overview" {
           title  = "API Gateway - Requests/min"
           region = "us-east-2"
           metrics = [
-            ["AWS/ApiGateway", "Count", "ApiId", var.api_gateway_id, { "stat" = "Sum", "period" = "60" }]
+            ["AWS/ApiGateway", "Count", "ApiId", "${var.api_gateway_id}", { "stat" = "Sum", "period" = "60" }]
           ]
           view = "timeSeries"
         }
@@ -49,7 +49,7 @@ resource "aws_cloudwatch_dashboard" "overview" {
           title  = "API Gateway - Latencia (ms)"
           region = "us-east-2"
           metrics = [
-            ["AWS/ApiGateway", "Latency", "ApiId", var.api_gateway_id, { "stat" = "p99", "period" = "60" }],
+            ["AWS/ApiGateway", "Latency", "ApiId", "${var.api_gateway_id}", { "stat" = "p99", "period" = "60" }],
             ["...", { "stat" = "Average", "period" = "60" }]
           ]
           view = "timeSeries"
@@ -66,7 +66,7 @@ resource "aws_cloudwatch_dashboard" "overview" {
           title  = "API Gateway - Errores"
           region = "us-east-2"
           metrics = [
-            ["AWS/ApiGateway", "4xx", "ApiId", var.api_gateway_id, { "stat" = "Sum", "period" = "60", "color" = "#ff7f0e" }],
+            ["AWS/ApiGateway", "4xx", "ApiId", "${var.api_gateway_id}", { "stat" = "Sum", "period" = "60", "color" = "#ff7f0e" }],
             [".", "5xx", ".", ".", { "stat" = "Sum", "period" = "60", "color" = "#d62728" }]
           ]
           view = "timeSeries"
@@ -115,7 +115,7 @@ resource "aws_cloudwatch_dashboard" "overview" {
           title  = "RabbitMQ - Mensajes"
           region = "us-east-2"
           metrics = [
-            ["AWS/AmazonMQ", "MessageCount", "Broker", var.rabbitmq_broker_name],
+            ["AWS/AmazonMQ", "MessageCount", "Broker", "${var.rabbitmq_broker_name}"],
             [".", "PublishRate", ".", "."],
             [".", "ConsumerCount", ".", "."]
           ]
@@ -240,7 +240,7 @@ resource "aws_cloudwatch_dashboard" "switch" {
           title  = "RabbitMQ - Mensajes Procesados"
           region = "us-east-2"
           metrics = [
-            ["AWS/AmazonMQ", "MessageCount", "Broker", var.rabbitmq_broker_name],
+            ["AWS/AmazonMQ", "MessageCount", "Broker", "${var.rabbitmq_broker_name}"],
             [".", "PublishRate", ".", "."]
           ]
         }
@@ -255,7 +255,7 @@ resource "aws_cloudwatch_dashboard" "switch" {
           title  = "API Gateway - Transferencias"
           region = "us-east-2"
           metrics = [
-            ["AWS/ApiGateway", "Count", "ApiId", var.api_gateway_id, { "stat" = "Sum" }]
+            ["AWS/ApiGateway", "Count", "ApiId", "${var.api_gateway_id}", { "stat" = "Sum" }]
           ]
         }
       }
