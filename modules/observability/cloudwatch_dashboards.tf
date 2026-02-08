@@ -2,6 +2,13 @@
 # CLOUDWATCH DASHBOARDS - Visibilidad del ecosistema bancario
 # ============================================================================
 
+# Locals para asegurar que todas las variables son strings
+locals {
+  api_gateway_id_str      = tostring(var.api_gateway_id != "" ? var.api_gateway_id : "placeholder-api-id")
+  rabbitmq_broker_name_str = tostring(var.rabbitmq_broker_name)
+  rds_instance_ids_str    = [for id in var.rds_instance_ids : tostring(id)]
+}
+
 # ============================================================================
 # DASHBOARD PRINCIPAL - Overview del Ecosistema
 # ============================================================================
@@ -30,14 +37,15 @@ resource "aws_cloudwatch_dashboard" "overview" {
         width  = 8
         height = 6
         properties = {
-          title  = "API Gateway - Requests/min"
-          region = "us-east-2"
+          title   = "API Gateway - Requests/min"
+          region  = "us-east-2"
+          stat    = "Sum"
+          period  = 60
+          view    = "timeSeries"
+          stacked = false
           metrics = [
-            ["AWS/ApiGateway", "Count", "ApiId", var.api_gateway_id]
+            ["AWS/ApiGateway", "Count", "ApiId", local.api_gateway_id_str]
           ]
-          stat   = "Sum"
-          period = 60
-          view   = "timeSeries"
         }
       },
       # API Gateway Latency
@@ -48,14 +56,15 @@ resource "aws_cloudwatch_dashboard" "overview" {
         width  = 8
         height = 6
         properties = {
-          title  = "API Gateway - Latencia (ms)"
-          region = "us-east-2"
+          title   = "API Gateway - Latencia (ms)"
+          region  = "us-east-2"
+          stat    = "Average"
+          period  = 60
+          view    = "timeSeries"
+          stacked = false
           metrics = [
-            ["AWS/ApiGateway", "Latency", "ApiId", var.api_gateway_id]
+            ["AWS/ApiGateway", "Latency", "ApiId", local.api_gateway_id_str]
           ]
-          stat   = "Average"
-          period = 60
-          view   = "timeSeries"
         }
       },
       # API Gateway Errors
@@ -66,15 +75,16 @@ resource "aws_cloudwatch_dashboard" "overview" {
         width  = 8
         height = 6
         properties = {
-          title  = "API Gateway - Errores"
-          region = "us-east-2"
+          title   = "API Gateway - Errores"
+          region  = "us-east-2"
+          stat    = "Sum"
+          period  = 60
+          view    = "timeSeries"
+          stacked = false
           metrics = [
-            ["AWS/ApiGateway", "4xx", "ApiId", var.api_gateway_id],
-            ["AWS/ApiGateway", "5xx", "ApiId", var.api_gateway_id]
+            ["AWS/ApiGateway", "4xx", "ApiId", local.api_gateway_id_str],
+            ["AWS/ApiGateway", "5xx", "ApiId", local.api_gateway_id_str]
           ]
-          stat   = "Sum"
-          period = 60
-          view   = "timeSeries"
         }
       },
       # RDS CPU - Todos los bancos
@@ -85,12 +95,15 @@ resource "aws_cloudwatch_dashboard" "overview" {
         width  = 12
         height = 6
         properties = {
-          title  = "RDS - CPU Utilization (%)"
-          region = "us-east-2"
+          title   = "RDS - CPU Utilization (%)"
+          region  = "us-east-2"
+          stat    = "Average"
+          period  = 300
+          view    = "timeSeries"
+          stacked = false
           metrics = [
-            for id in var.rds_instance_ids : ["AWS/RDS", "CPUUtilization", "DBInstanceIdentifier", id]
+            for id in local.rds_instance_ids_str : ["AWS/RDS", "CPUUtilization", "DBInstanceIdentifier", id]
           ]
-          view = "timeSeries"
         }
       },
       # RDS Connections
@@ -101,12 +114,15 @@ resource "aws_cloudwatch_dashboard" "overview" {
         width  = 12
         height = 6
         properties = {
-          title  = "RDS - Conexiones Activas"
-          region = "us-east-2"
+          title   = "RDS - Conexiones Activas"
+          region  = "us-east-2"
+          stat    = "Average"
+          period  = 300
+          view    = "timeSeries"
+          stacked = false
           metrics = [
-            for id in var.rds_instance_ids : ["AWS/RDS", "DatabaseConnections", "DBInstanceIdentifier", id]
+            for id in local.rds_instance_ids_str : ["AWS/RDS", "DatabaseConnections", "DBInstanceIdentifier", id]
           ]
-          view = "timeSeries"
         }
       },
       # RabbitMQ Messages
@@ -117,14 +133,15 @@ resource "aws_cloudwatch_dashboard" "overview" {
         width  = 12
         height = 6
         properties = {
-          title  = "RabbitMQ - Mensajes"
-          region = "us-east-2"
+          title   = "RabbitMQ - Mensajes"
+          region  = "us-east-2"
+          stat    = "Average"
+          period  = 300
+          view    = "timeSeries"
+          stacked = false
           metrics = [
-            ["AWS/AmazonMQ", "MessageCount", "Broker", "${var.rabbitmq_broker_name}"],
-            [".", "PublishRate", ".", "."],
-            [".", "ConsumerCount", ".", "."]
+            ["AWS/AmazonMQ", "MessageCount", "Broker", local.rabbitmq_broker_name_str]
           ]
-          view = "timeSeries"
         }
       },
       # Alarmas Activas
@@ -135,9 +152,9 @@ resource "aws_cloudwatch_dashboard" "overview" {
         width  = 12
         height = 6
         properties = {
-          title = "🚨 Estado de Alarmas"
+          title  = "🚨 Estado de Alarmas"
           alarms = [
-            for id in var.rds_instance_ids : "arn:aws:cloudwatch:us-east-2:${data.aws_caller_identity.current.account_id}:alarm:RDS-${id}-High-CPU"
+            for id in local.rds_instance_ids_str : "arn:aws:cloudwatch:us-east-2:${data.aws_caller_identity.current.account_id}:alarm:RDS-${id}-High-CPU"
           ]
         }
       }
@@ -174,13 +191,22 @@ resource "aws_cloudwatch_dashboard" "arcbank" {
         width  = 12
         height = 6
         properties = {
-          title  = "RDS CPU - ArcBank"
-          region = "us-east-2"
+          title   = "RDS CPU - ArcBank"
+          region  = "us-east-2"
+          stat    = "Average"
+          period  = 300
+          view    = "timeSeries"
+          stacked = false
           metrics = [
             ["AWS/RDS", "CPUUtilization", "DBInstanceIdentifier", "rds-arcbank"]
           ]
           annotations = {
-            horizontal = [{ "value" : 80, "label" : "Umbral Alarma" }]
+            horizontal = [
+              {
+                value = 80
+                label = "Umbral Alarma"
+              }
+            ]
           }
         }
       },
@@ -191,8 +217,12 @@ resource "aws_cloudwatch_dashboard" "arcbank" {
         width  = 12
         height = 6
         properties = {
-          title  = "RDS Storage - ArcBank"
-          region = "us-east-2"
+          title   = "RDS Storage - ArcBank"
+          region  = "us-east-2"
+          stat    = "Average"
+          period  = 300
+          view    = "timeSeries"
+          stacked = false
           metrics = [
             ["AWS/RDS", "FreeStorageSpace", "DBInstanceIdentifier", "rds-arcbank"]
           ]
@@ -228,8 +258,12 @@ resource "aws_cloudwatch_dashboard" "switch" {
         width  = 8
         height = 6
         properties = {
-          title  = "RDS CPU - Switch"
-          region = "us-east-2"
+          title   = "RDS CPU - Switch"
+          region  = "us-east-2"
+          stat    = "Average"
+          period  = 300
+          view    = "timeSeries"
+          stacked = false
           metrics = [
             ["AWS/RDS", "CPUUtilization", "DBInstanceIdentifier", "rds-switch"]
           ]
@@ -242,11 +276,14 @@ resource "aws_cloudwatch_dashboard" "switch" {
         width  = 8
         height = 6
         properties = {
-          title  = "RabbitMQ - Mensajes Procesados"
-          region = "us-east-2"
+          title   = "RabbitMQ - Mensajes Procesados"
+          region  = "us-east-2"
+          stat    = "Average"
+          period  = 300
+          view    = "timeSeries"
+          stacked = false
           metrics = [
-            ["AWS/AmazonMQ", "MessageCount", "Broker", "${var.rabbitmq_broker_name}"],
-            [".", "PublishRate", ".", "."]
+            ["AWS/AmazonMQ", "MessageCount", "Broker", local.rabbitmq_broker_name_str]
           ]
         }
       },
@@ -257,14 +294,15 @@ resource "aws_cloudwatch_dashboard" "switch" {
         width  = 8
         height = 6
         properties = {
-          title  = "API Gateway - Transferencias"
-          region = "us-east-2"
+          title   = "API Gateway - Transferencias"
+          region  = "us-east-2"
+          stat    = "Sum"
+          period  = 300
+          view    = "timeSeries"
+          stacked = false
           metrics = [
-            ["AWS/ApiGateway", "Count", "ApiId", var.api_gateway_id]
+            ["AWS/ApiGateway", "Count", "ApiId", local.api_gateway_id_str]
           ]
-          stat   = "Sum"
-          period = 300
-          view   = "timeSeries"
         }
       }
     ]
