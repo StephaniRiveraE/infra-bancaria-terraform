@@ -1,0 +1,46 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: ecusol-gateway-server
+  namespace: ecusol
+  labels:
+    app: ecusol-gateway-server
+spec:
+  type: ClusterIP
+  ports:
+  - port: 8080
+    targetPort: 8080
+    protocol: TCP
+    name: http
+  selector:
+    app: ecusol-gateway-server
+---
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: ecusol-gateway-ingress
+  namespace: ecusol
+  annotations:
+    alb.ingress.kubernetes.io/scheme: internet-facing
+    alb.ingress.kubernetes.io/target-type: ip
+    alb.ingress.kubernetes.io/healthcheck-path: /health
+    alb.ingress.kubernetes.io/healthcheck-interval-seconds: '30'
+    alb.ingress.kubernetes.io/healthcheck-timeout-seconds: '5'
+    alb.ingress.kubernetes.io/healthy-threshold-count: '2'
+    alb.ingress.kubernetes.io/unhealthy-threshold-count: '2'
+    alb.ingress.kubernetes.io/group.name: banca-ecosistema-shared-alb
+  labels:
+    app: ecusol-gateway-server
+spec:
+  ingressClassName: alb
+  rules:
+  - host: ecusol-api.banca-ecosistema.com
+    http:
+      paths:
+      - path: /
+        pathType: Prefix
+        backend:
+          service:
+            name: ecusol-gateway-server
+            port:
+              number: 8080
