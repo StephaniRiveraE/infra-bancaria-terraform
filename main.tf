@@ -105,8 +105,9 @@ module "observability" {
   api_gateway_stage = var.environment
 
   # Variables para Container Insights (EKS)
-  eks_enabled      = var.eks_enabled
-  eks_cluster_name = var.eks_enabled ? module.compute.cluster_name : "eks-banca-ecosistema"
+  eks_enabled                   = var.eks_enabled
+  eks_cluster_name              = var.eks_enabled ? module.compute.cluster_name : "eks-banca-ecosistema"
+  enable_eks_container_insights = var.enable_eks_container_insights
 }
 
 # ============================================================================

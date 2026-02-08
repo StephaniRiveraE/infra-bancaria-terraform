@@ -7,7 +7,7 @@
 # Addon de CloudWatch Observability para EKS
 # Proporciona: métricas de pods, logs, y Container Insights
 resource "aws_eks_addon" "cloudwatch_observability" {
-  count = var.eks_enabled ? 1 : 0
+  count = var.eks_enabled && var.enable_eks_container_insights ? 1 : 0
 
   cluster_name                = var.eks_cluster_name
   addon_name                  = "amazon-cloudwatch-observability"
