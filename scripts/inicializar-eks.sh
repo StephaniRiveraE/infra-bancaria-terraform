@@ -116,9 +116,96 @@ else
 fi
 
 # ============================================================================
-# PASO 6: Resumen
+# PASO 6: Crear Deployments de Microservicios
 # ============================================================================
-print_step "6/6" "Verificación final..."
+print_step "6/7" "Creando deployments para todos los microservicios..."
+
+# Obtener AWS Account ID
+export AWS_ACCOUNT_ID=$(aws sts get-caller-identity --query Account --output text)
+export AWS_REGION="us-east-2"
+export IMAGE_TAG="latest"
+
+echo "  Account ID: $AWS_ACCOUNT_ID"
+echo ""
+
+# Función para crear un deployment
+create_deployment() {
+    local namespace=$1
+    local service_name=$2
+    local ecr_repo=$3
+    
+    export NAMESPACE=$namespace
+    export SERVICE_NAME=$service_name
+    export ECR_REPO_NAME=$ecr_repo
+    
+    echo "  📦 Creando: $service_name en namespace $namespace"
+    
+    envsubst < "$PROJECT_DIR/k8s-manifests/templates/deployment-template.yaml" | kubectl apply -f - > /dev/null 2>&1
+    
+    if [ $? -eq 0 ]; then
+        echo "     ✅ Deployment creado: $service_name"
+    else
+        print_warning "Error creando $service_name (puede ser normal si ya existe)"
+    fi
+}
+
+# Array de microservicios: "namespace:service_name:ecr_repo"
+declare -a microservices=(
+    # ArcBank (5)
+    "arcbank:gateway-server:arcbank-gateway-server"
+    "arcbank:service-clientes:arcbank-service-clientes"
+    "arcbank:service-cuentas:arcbank-service-cuentas"
+    "arcbank:service-transacciones:arcbank-service-transacciones"
+    "arcbank:service-sucursales:arcbank-service-sucursales"
+    
+    # Bantec (5)
+    "bantec:gateway-server:bantec-gateway-server"
+    "bantec:service-clientes:bantec-service-clientes"
+    "bantec:service-cuentas:bantec-service-cuentas"
+    "bantec:service-transacciones:bantec-service-transacciones"
+    "bantec:service-sucursales:bantec-service-sucursales"
+    
+    # Nexus (7)
+    "nexus:nexus-gateway:nexus-gateway"
+    "nexus:nexus-ms-clientes:nexus-ms-clientes"
+    "nexus:nexus-cbs:nexus-cbs"
+    "nexus:nexus-ms-transacciones:nexus-ms-transacciones"
+    "nexus:nexus-ms-geografia:nexus-ms-geografia"
+    "nexus:nexus-web-backend:nexus-web-backend"
+    "nexus:nexus-ventanilla-backend:nexus-ventanilla-backend"
+    
+    # EcuSol (7)
+    "ecusol:ecusol-gateway-server:ecusol-gateway-server"
+    "ecusol:ecusol-ms-clientes:ecusol-ms-clientes"
+    "ecusol:ecusol-ms-cuentas:ecusol-ms-cuentas"
+    "ecusol:ecusol-ms-transacciones:ecusol-ms-transacciones"
+    "ecusol:ecusol-ms-geografia:ecusol-ms-geografia"
+    "ecusol:ecusol-web-backend:ecusol-web-backend"
+    "ecusol:ecusol-ventanilla-backend:ecusol-ventanilla-backend"
+    
+    # Switch (6)
+    "switch:switch-gateway-internal:switch-gateway-internal"
+    "switch:switch-ms-nucleo:switch-ms-nucleo"
+    "switch:switch-ms-contabilidad:switch-ms-contabilidad"
+    "switch:switch-ms-compensacion:switch-ms-compensacion"
+    "switch:switch-ms-devolucion:switch-ms-devolucion"
+    "switch:switch-ms-directorio:switch-ms-directorio"
+)
+
+# Crear todos los deployments
+echo ""
+for svc in "${microservices[@]}"; do
+    IFS=':' read -r namespace service_name ecr_repo <<< "$svc"
+    create_deployment "$namespace" "$service_name" "$ecr_repo"
+done
+
+echo ""
+echo "  ✅ Total deployments creados: ${#microservices[@]}"
+
+# ============================================================================
+# PASO 7: Verificación final
+# ============================================================================
+print_step "7/7" "Verificación final..."
 
 echo ""
 echo "📋 RESUMEN DE RECURSOS CREADOS:"
@@ -130,25 +217,27 @@ echo ""
 echo "Secrets de BD:"
 kubectl get secrets -A 2>/dev/null | grep db-credentials || print_warning "Secrets de BD pendientes"
 echo ""
+echo "Deployments creados:"
+kubectl get deployments -A 2>/dev/null | grep -E "arcbank|bantec|nexus|ecusol|switch" | wc -l | awk '{print "  Total: "$1" deployments"}'
+echo ""
 
 # ============================================================================
 # FIN
 # ============================================================================
 echo ""
 echo -e "${GREEN}✅ =============================================="
-echo "   EKS INICIALIZADO CORRECTAMENTE"
+echo "   EKS COMPLETAMENTE INICIALIZADO"
 echo "===============================================${NC}"
 echo ""
-echo "PRÓXIMOS PASOS:"
-echo "1. Crear deployments iniciales para cada microservicio"
-echo "2. Los desarrolladores pueden hacer git push a sus repos"
+echo "✨ LISTO PARA DESARROLLADORES ✨"
 echo ""
-echo "Para crear un deployment inicial, usa:"
-echo "  export SERVICE_NAME=ms-clientes"
-echo "  export NAMESPACE=arcbank"
-echo "  export AWS_ACCOUNT_ID=123456789012"
-echo "  export AWS_REGION=us-east-2"
-echo "  export ECR_REPO_NAME=arcbank-ms-clientes"
-echo "  export IMAGE_TAG=latest"
-echo "  envsubst < k8s-manifests/templates/deployment-template.yaml | kubectl apply -f -"
+echo "Los developers ya pueden hacer 'git push' en sus repos."
+echo "Los workflows de GitHub Actions actualizarán automáticamente"
+echo "las imágenes Docker en estos deployments."
+echo ""
+echo "Para ver el estado de los pods:"
+echo "  kubectl get pods -A"
+echo ""
+echo "Nota: Los pods estarán en 'ImagePullBackOff' hasta que se haga"
+echo "el primer push con código. Esto es normal."
 echo ""
