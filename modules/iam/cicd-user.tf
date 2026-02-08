@@ -63,6 +63,34 @@ resource "aws_iam_policy" "cicd_eks" {
   tags = var.common_tags
 }
 
+# Política para S3 (deploy de frontends)
+resource "aws_iam_policy" "cicd_s3" {
+  name        = "CICD-S3-Deploy"
+  description = "Permite deploy de frontends a S3"
+
+  policy = jsonencode({
+    Version = "2012-10-17"
+    Statement = [
+      {
+        Effect = "Allow"
+        Action = [
+          "s3:PutObject",
+          "s3:GetObject",
+          "s3:DeleteObject",
+          "s3:ListBucket",
+          "s3:GetBucketLocation"
+        ]
+        Resource = [
+          "arn:aws:s3:::banca-ecosistema-*",
+          "arn:aws:s3:::banca-ecosistema-*/*"
+        ]
+      }
+    ]
+  })
+
+  tags = var.common_tags
+}
+
 # Usuario IAM para CI/CD
 resource "aws_iam_user" "cicd_deployer" {
   name = "github-actions-deployer"
@@ -83,6 +111,11 @@ resource "aws_iam_user_policy_attachment" "cicd_ecr" {
 resource "aws_iam_user_policy_attachment" "cicd_eks" {
   user       = aws_iam_user.cicd_deployer.name
   policy_arn = aws_iam_policy.cicd_eks.arn
+}
+
+resource "aws_iam_user_policy_attachment" "cicd_s3" {
+  user       = aws_iam_user.cicd_deployer.name
+  policy_arn = aws_iam_policy.cicd_s3.arn
 }
 
 # Access Keys para GitHub Actions
