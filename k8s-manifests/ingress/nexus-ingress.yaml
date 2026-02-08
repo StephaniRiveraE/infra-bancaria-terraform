@@ -1,0 +1,46 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: nexus-gateway
+  namespace: nexus
+  labels:
+    app: nexus-gateway
+spec:
+  type: ClusterIP
+  ports:
+  - port: 8080
+    targetPort: 8080
+    protocol: TCP
+    name: http
+  selector:
+    app: nexus-gateway
+---
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: nexus-gateway-ingress
+  namespace: nexus
+  annotations:
+    alb.ingress.kubernetes.io/scheme: internet-facing
+    alb.ingress.kubernetes.io/target-type: ip
+    alb.ingress.kubernetes.io/healthcheck-path: /health
+    alb.ingress.kubernetes.io/healthcheck-interval-seconds: '30'
+    alb.ingress.kubernetes.io/healthcheck-timeout-seconds: '5'
+    alb.ingress.kubernetes.io/healthy-threshold-count: '2'
+    alb.ingress.kubernetes.io/unhealthy-threshold-count: '2'
+    alb.ingress.kubernetes.io/group.name: banca-ecosistema-shared-alb
+  labels:
+    app: nexus-gateway
+spec:
+  ingressClassName: alb
+  rules:
+  - host: nexus-api.banca-ecosistema.com
+    http:
+      paths:
+      - path: /
+        pathType: Prefix
+        backend:
+          service:
+            name: nexus-gateway
+            port:
+              number: 8080
