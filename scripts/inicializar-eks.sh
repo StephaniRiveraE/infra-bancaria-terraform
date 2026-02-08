@@ -1,13 +1,13 @@
-#!/bin/bash
+﻿#!/bin/bash
 # ============================================================================
-# SCRIPT DE INICIALIZACIÓN DE EKS
+# SCRIPT DE INICIALIZACIÃ“N DE EKS
 # Ejecutar cada vez que se enciende EKS (eks_enabled=true)
 # ============================================================================
 
 set -e
 
-echo "🚀 =============================================="
-echo "   INICIALIZACIÓN DE EKS - Banca Ecosistema"
+echo "ðŸš€ =============================================="
+echo "   INICIALIZACIÃ“N DE EKS - Banca Ecosistema"
 echo "==============================================="
 echo ""
 
@@ -23,7 +23,7 @@ AWS_REGION="us-east-2"
 SCRIPT_DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
 PROJECT_DIR="$(dirname "$SCRIPT_DIR")"
 
-# Función para imprimir pasos
+# FunciÃ³n para imprimir pasos
 print_step() {
     echo -e "${GREEN}[PASO $1]${NC} $2"
 }
@@ -42,17 +42,17 @@ print_error() {
 print_step "1/6" "Verificando prerequisitos..."
 
 if ! command -v aws &> /dev/null; then
-    print_error "AWS CLI no está instalado"
+    print_error "AWS CLI no estÃ¡ instalado"
     exit 1
 fi
 
 if ! command -v kubectl &> /dev/null; then
-    print_error "kubectl no está instalado"
+    print_error "kubectl no estÃ¡ instalado"
     exit 1
 fi
 
-echo "  ✅ AWS CLI instalado"
-echo "  ✅ kubectl instalado"
+echo "  âœ… AWS CLI instalado"
+echo "  âœ… kubectl instalado"
 
 # ============================================================================
 # PASO 2: Configurar kubectl
@@ -61,23 +61,23 @@ print_step "2/6" "Configurando kubectl para conectar a EKS..."
 
 aws eks update-kubeconfig --name $EKS_CLUSTER --region $AWS_REGION
 
-echo "  ✅ kubectl configurado"
+echo "  âœ… kubectl configurado"
 
-# Verificar conexión
+# Verificar conexiÃ³n
 if ! kubectl cluster-info &> /dev/null; then
-    print_error "No se puede conectar al cluster. ¿El EKS está encendido?"
+    print_error "No se puede conectar al cluster. Â¿El EKS estÃ¡ encendido?"
     echo "  Ejecuta: terraform apply -var=\"eks_enabled=true\""
     exit 1
 fi
 
-echo "  ✅ Conexión al cluster verificada"
+echo "  âœ… ConexiÃ³n al cluster verificada"
 
 # ============================================================================
 # PASO 3: Parchar CoreDNS (solo si es necesario)
 # ============================================================================
 print_step "3/6" "Verificando CoreDNS..."
 
-# Intentar parchar, ignorar si ya está parchado
+# Intentar parchar, ignorar si ya estÃ¡ parchado
 kubectl patch deployment coredns -n kube-system \
     --type json \
     -p='[{"op": "remove", "path": "/spec/template/metadata/annotations/eks.amazonaws.com~1compute-type"}]' 2>/dev/null || true
@@ -85,11 +85,11 @@ kubectl patch deployment coredns -n kube-system \
 # Reiniciar CoreDNS
 kubectl rollout restart deployment coredns -n kube-system 2>/dev/null || true
 
-echo "  ✅ CoreDNS configurado"
+echo "  âœ… CoreDNS configurado"
 
-# Esperar a que CoreDNS esté listo
-echo "  ⏳ Esperando que CoreDNS esté listo..."
-kubectl rollout status deployment coredns -n kube-system --timeout=120s 2>/dev/null || print_warning "CoreDNS puede tardar un poco más"
+# Esperar a que CoreDNS estÃ© listo
+echo "  â³ Esperando que CoreDNS estÃ© listo..."
+kubectl rollout status deployment coredns -n kube-system --timeout=120s 2>/dev/null || print_warning "CoreDNS puede tardar un poco mÃ¡s"
 
 # ============================================================================
 # PASO 4: Crear Namespaces
@@ -98,7 +98,7 @@ print_step "4/6" "Creando namespaces..."
 
 kubectl apply -f "$PROJECT_DIR/k8s-manifests/namespaces/"
 
-echo "  ✅ Namespaces creados:"
+echo "  âœ… Namespaces creados:"
 kubectl get namespaces | grep -E "arcbank|bantec|nexus|ecusol|switch" | awk '{print "     - "$1}'
 
 # ============================================================================
@@ -112,7 +112,7 @@ if [ -f "$SCRIPT_DIR/crear-secrets-bd.sh" ]; then
     cd "$SCRIPT_DIR" && ./crear-secrets-bd.sh
     cd "$PROJECT_DIR"
 else
-    print_warning "Script crear-secrets-bd.sh no encontrado. Ejecutar manualmente después."
+    print_warning "Script crear-secrets-bd.sh no encontrado. Ejecutar manualmente despuÃ©s."
 fi
 
 # ============================================================================
@@ -128,7 +128,7 @@ export IMAGE_TAG="latest"
 echo "  Account ID: $AWS_ACCOUNT_ID"
 echo ""
 
-# Función para crear un deployment
+# FunciÃ³n para crear un deployment
 create_deployment() {
     local namespace=$1
     local service_name=$2
@@ -138,12 +138,12 @@ create_deployment() {
     export SERVICE_NAME=$service_name
     export ECR_REPO_NAME=$ecr_repo
     
-    echo "  📦 Creando: $service_name en namespace $namespace"
+    echo "  ðŸ“¦ Creando: $service_name en namespace $namespace"
     
     envsubst < "$PROJECT_DIR/k8s-manifests/templates/deployment-template.yaml" | kubectl apply -f - > /dev/null 2>&1
     
     if [ $? -eq 0 ]; then
-        echo "     ✅ Deployment creado: $service_name"
+        echo "     âœ… Deployment creado: $service_name"
     else
         print_warning "Error creando $service_name (puede ser normal si ya existe)"
     fi
@@ -200,15 +200,15 @@ for svc in "${microservices[@]}"; do
 done
 
 echo ""
-echo "  ✅ Total deployments creados: ${#microservices[@]}"
+echo "  âœ… Total deployments creados: ${#microservices[@]}"
 
 # ============================================================================
-# PASO 7: Verificación final
+# PASO 7: VerificaciÃ³n final
 # ============================================================================
-print_step "7/7" "Verificación final..."
+print_step "7/7" "VerificaciÃ³n final..."
 
 echo ""
-echo "📋 RESUMEN DE RECURSOS CREADOS:"
+echo "ðŸ“‹ RESUMEN DE RECURSOS CREADOS:"
 echo "================================"
 echo ""
 echo "Namespaces:"
@@ -225,19 +225,19 @@ echo ""
 # FIN
 # ============================================================================
 echo ""
-echo -e "${GREEN}✅ =============================================="
+echo -e "${GREEN}âœ… =============================================="
 echo "   EKS COMPLETAMENTE INICIALIZADO"
 echo "===============================================${NC}"
 echo ""
-echo "✨ LISTO PARA DESARROLLADORES ✨"
+echo "âœ¨ LISTO PARA DESARROLLADORES âœ¨"
 echo ""
 echo "Los developers ya pueden hacer 'git push' en sus repos."
-echo "Los workflows de GitHub Actions actualizarán automáticamente"
-echo "las imágenes Docker en estos deployments."
+echo "Los workflows de GitHub Actions actualizarÃ¡n automÃ¡ticamente"
+echo "las imÃ¡genes Docker en estos deployments."
 echo ""
 echo "Para ver el estado de los pods:"
 echo "  kubectl get pods -A"
 echo ""
-echo "Nota: Los pods estarán en 'ImagePullBackOff' hasta que se haga"
-echo "el primer push con código. Esto es normal."
+echo "Nota: Los pods estarÃ¡n en 'ImagePullBackOff' hasta que se haga"
+echo "el primer push con cÃ³digo. Esto es normal."
 echo ""
