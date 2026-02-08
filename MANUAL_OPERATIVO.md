@@ -141,51 +141,28 @@ cd c:\proyecto-bancario-devops\scripts
 ./inicializar-eks.sh
 
 # Si usas PowerShell, primero instala Git Bash o WSL
-# O ejecuta los comandos manualmente:
-aws eks update-kubeconfig --name eks-banca-ecosistema --region us-east-2
-kubectl apply -f ../k8s-manifests/namespaces/
-./crear-secrets-bd.sh
 ```
 
-### Paso 3: Crear deployments iniciales
+**¿Qué hace el script automáticamente?**
+1. ✅ Configura kubectl
+2. ✅ Parcha CoreDNS para Fargate
+3. ✅ Crea namespaces (arcbank, bantec, nexus, ecusol, switch)
+4. ✅ Crea secrets de BD en cada namespace
+5. ✅ **Crea los 30 deployments iniciales automáticamente**
 
-Para CADA microservicio que los desarrolladores usarán:
+⏱️ **Tiempo:** 3-5 minutos
 
-```bash
-# Obtener tu AWS Account ID
-export AWS_ACCOUNT_ID=$(aws sts get-caller-identity --query Account --output text)
-export AWS_REGION=us-east-2
-
-# ========== EJEMPLO: ArcBank ms-clientes ==========
-export SERVICE_NAME=ms-clientes
-export NAMESPACE=arcbank
-export ECR_REPO_NAME=arcbank-ms-clientes
-export IMAGE_TAG=latest
-
-envsubst < ../k8s-manifests/templates/deployment-template.yaml | kubectl apply -f -
-
-# ========== EJEMPLO: Switch ms-nucleo ==========
-export SERVICE_NAME=ms-nucleo
-export NAMESPACE=switch
-export ECR_REPO_NAME=switch-ms-nucleo
-export IMAGE_TAG=latest
-
-envsubst < ../k8s-manifests/templates/deployment-template.yaml | kubectl apply -f -
-
-# Repetir para cada microservicio que necesiten los desarrolladores...
-```
-
-### Paso 4: Verificar
+### Paso 3: Verificar
 
 ```bash
 # Ver todos los deployments creados
 kubectl get deployments -A
 
-# Ver pods (estarán en Pending hasta que haya imagen en ECR)
+# Ver pods (estarán en ImagePullBackOff hasta que haya imagen en ECR - esto es normal)
 kubectl get pods -A
 ```
 
-### Paso 5: ✅ Notificar a desarrolladores
+### Paso 4: ✅ Notificar a desarrolladores
 
 Los desarrolladores pueden hacer `git push` a sus repos.
 
@@ -202,17 +179,17 @@ Los desarrolladores pueden hacer `git push` a sus repos.
 ### Si apagaste EKS (eks_enabled=false):
 
 1. Hacer PR para volver a poner `eks_enabled=true`
-2. Esperar merge y terraform apply
-3. Ejecutar `./scripts/inicializar-eks.sh`
-4. **Recrear** todos los deployments iniciales (se pierden al apagar EKS)
+2. Esperar merge y terraform apply (~15-20 min)
+3. Ejecutar `./scripts/inicializar-eks.sh` ✅ (Crea namespaces, secrets Y deployments automáticamente)
 
 ```bash
-# El script de inicialización hace casi todo:
+# El script ahora hace TODO automáticamente:
 ./scripts/inicializar-eks.sh
 
-# Pero los deployments hay que recrearlos manualmente
-# (ver Paso 3 de Primer Despliegue)
+# ✅ Listo - desarrolladores pueden usar
 ```
+
+⏱️ **Tiempo total:** ~18-25 minutos (15-20 de terraform + 3-5 del script)
 
 ---
 
