@@ -106,7 +106,7 @@ module "observability" {
 
   # Variables para Container Insights (EKS)
   eks_enabled      = var.eks_enabled
-  eks_cluster_name = var.eks_enabled ? module.compute.eks_cluster_name : "eks-banca-ecosistema"
+  eks_cluster_name = var.eks_enabled ? module.compute.cluster_name : "eks-banca-ecosistema"
 }
 
 # ============================================================================

@@ -107,7 +107,7 @@ variable "common_tags" {
 variable "eks_enabled" {
   description = "Habilitar/deshabilitar el stack de EKS (cluster, NAT, Fargate). Poner en false para ahorrar costos cuando no se necesite."
   type        = bool
-  default     = false
+  default     = true
 }
 
 variable "eks_log_retention_days" {
