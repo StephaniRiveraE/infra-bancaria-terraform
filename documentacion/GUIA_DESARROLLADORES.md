@@ -1,23 +1,8 @@
 # 🚀 Guía para Desarrolladores - Despliegue a AWS
 
-> **Última actualización:** 2026-02-07
+## 📋 Datos que Necesitas
 
-## 📋 Resumen del Flujo CI/CD
-
-```
-Tu código → Push a main → GitHub Actions → AWS (EKS o S3)
-```
-
-| Tipo de proyecto | Workflow a usar | Destino AWS |
-|-----------------|-----------------|-------------|
-| **Microservicio (Spring Boot)** | `deploy-to-eks.yml` | Amazon ECR → EKS |
-| **Frontend (React/Angular/Vue)** | `deploy-to-s3.yml` | Amazon S3 |
-
----
-
-# 🔧 PARTE 1: Microservicios (Backend)
-
-## Tu Banco y Namespace
+### Tu Banco y Namespace
 
 | Banco | NAMESPACE | 
 |-------|-----------|
@@ -83,15 +68,12 @@ Tu código → Push a main → GitHub Actions → AWS (EKS o S3)
 
 ---
 
-## 🔧 Configuración del Workflow (Backend)
+## 🔧 Configuración del Workflow
 
 ### Paso 1: Copia el archivo
-Descarga `deploy-to-eks.yml` del repo de infraestructura y cópialo a tu repo en:
+Copia el archivo `deploy-to-eks.yml` a tu repo en:
 ```
-tu-microservicio/
-└── .github/
-    └── workflows/
-        └── deploy.yml      ← Aquí
+.github/workflows/deploy.yml
 ```
 
 ### Paso 2: Edita SOLO estas 3 líneas
@@ -102,13 +84,19 @@ ECR_REPO: arcbank-service-clientes       # ← Tu repo ECR (ver tabla arriba)
 SERVICE_NAME: service-clientes           # ← Tu microservicio
 ```
 
-### Paso 3: Configura GitHub Secrets
-En tu repositorio → Settings → Secrets → Actions:
+### Ejemplo para Bantec service-cuentas:
+```yaml
+NAMESPACE: bantec
+ECR_REPO: bantec-service-cuentas
+SERVICE_NAME: service-cuentas
+```
 
-| Secret | Valor | ¿De dónde lo saco? |
-|--------|-------|-------------------|
-| `AWS_ACCESS_KEY_ID` | Access Key | Pregunta a DevOps |
-| `AWS_SECRET_ACCESS_KEY` | Secret Key | Pregunta a DevOps |
+### Ejemplo para EcuSol ms-transacciones:
+```yaml
+NAMESPACE: ecusol
+ECR_REPO: ecusol-ms-transacciones
+SERVICE_NAME: ecusol-ms-transacciones
+```
 
 ---
 
@@ -122,15 +110,9 @@ spring.datasource.username=${SPRING_DATASOURCE_USERNAME}
 spring.datasource.password=${SPRING_DATASOURCE_PASSWORD}
 ```
 
-**⚠️ NO pongas valores hardcodeados.** Kubernetes los inyecta automáticamente.
+**NO pongas valores hardcodeados**. Kubernetes los inyecta automáticamente.
 
-### ¿Cómo pruebo en local?
-Crea un archivo `.env` (NO lo subas a Git):
-```bash
-SPRING_DATASOURCE_URL=jdbc:postgresql://localhost:5432/mi_db
-SPRING_DATASOURCE_USERNAME=postgres
-SPRING_DATASOURCE_PASSWORD=localpassword
-```
+> ℹ️ Los secrets de BD son creados por DevOps. Solo usa las variables de entorno en tu código.
 
 ---
 
@@ -160,119 +142,20 @@ ENTRYPOINT ["java", "-jar", "app.jar"]
 
 ---
 
-## ✅ Checklist Backend
+## ✅ Checklist
 
 - [ ] Tengo `Dockerfile` en la raíz
 - [ ] Tengo `.github/workflows/deploy.yml`
 - [ ] Cambié NAMESPACE, ECR_REPO y SERVICE_NAME
-- [ ] Mi código usa variables de entorno para BD y RabbitMQ
-- [ ] Configuré AWS_ACCESS_KEY_ID y AWS_SECRET_ACCESS_KEY en GitHub Secrets
+- [ ] Mi código usa variables de entorno para BD
 - [ ] El proyecto compila con `mvn clean package`
 
 ---
 
-# 🌐 PARTE 2: Frontends (S3)
+## 🆘 Errores Comunes
 
-## 📦 Buckets S3 Disponibles
-
-| Frontend | S3_BUCKET |
-|----------|-----------|
-| **Switch** | |
-| Admin Panel | `banca-ecosistema-switch-admin-panel-512be32e` |
-| **ArcBank** | |
-| Web Client | `banca-ecosistema-arcbank-web-client-512be32e` |
-| Ventanilla App | `banca-ecosistema-arcbank-ventanilla-app-512be32e` |
-| **Bantec** | |
-| Web Client | `banca-ecosistema-bantec-web-client-512be32e` |
-| Ventanilla App | `banca-ecosistema-bantec-ventanilla-app-512be32e` |
-| **Nexus** | |
-| Web Client | `banca-ecosistema-nexus-web-client-512be32e` |
-| Ventanilla App | `banca-ecosistema-nexus-ventanilla-app-512be32e` |
-| **EcuSol** | |
-| Web Client | `banca-ecosistema-ecusol-web-client-512be32e` |
-| Ventanilla App | `banca-ecosistema-ecusol-ventanilla-app-512be32e` |
-
----
-
-## 🔧 Configuración del Workflow (Frontend)
-
-### Paso 1: Copia el archivo
-Descarga `deploy-to-s3.yml` del repo de infraestructura y cópialo a tu repo en:
-```
-mi-frontend/
-└── .github/
-    └── workflows/
-        └── deploy.yml      ← Aquí
-```
-
-### Paso 2: Edita SOLO esta línea
-
-```yaml
-S3_BUCKET: banca-ecosistema-arcbank-web-client-512be32e   # ← Tu bucket (ver tabla arriba)
-```
-
-### Paso 3: Configura GitHub Secrets
-En tu repositorio → Settings → Secrets → Actions:
-
-| Secret | Valor |
-|--------|-------|
-| `AWS_ACCESS_KEY_ID` | Access Key (pregunta a DevOps) |
-| `AWS_SECRET_ACCESS_KEY` | Secret Key (pregunta a DevOps) |
-
-### Paso 4: (Opcional) Configura Variables
-En Settings → Variables → Actions:
-
-| Variable | Valor |
-|----------|-------|
-| `API_URL` | URL del API Gateway (ej: `https://xxx.execute-api.us-east-2.amazonaws.com/dev`) |
-
----
-
-## 📁 Estructura Esperada del Frontend
-
-```
-mi-frontend/
-├── .github/
-│   └── workflows/
-│       └── deploy.yml
-├── src/
-├── public/
-├── package.json
-└── (dist/ o build/ se genera automáticamente)
-```
-
-El workflow detecta automáticamente si usas:
-- **Vite/Vue**: carpeta `dist/`
-- **React (CRA)**: carpeta `build/`
-- **Next.js export**: carpeta `out/`
-
----
-
-## ✅ Checklist Frontend
-
-- [ ] Tengo `.github/workflows/deploy.yml`
-- [ ] Cambié S3_BUCKET al mío
-- [ ] Configuré AWS_ACCESS_KEY_ID y AWS_SECRET_ACCESS_KEY en GitHub Secrets
-- [ ] `npm run build` funciona correctamente
-- [ ] Usé variables de entorno para API_URL (no hardcoded)
-
----
-
-# 🆘 Errores Comunes
-
-| Error | Tipo | Solución |
-|-------|------|----------|
-| "repository does not exist" | Backend | ECR_REPO mal escrito, usa la tabla |
-| "deployment not found" | Backend | DevOps debe crear el deployment inicial en EKS |
-| "connection refused" | Backend | Security Group no permite conexión |
-| "AccessDenied" | Ambos | AWS Secrets mal configurados |
-| "NoSuchBucket" | Frontend | S3_BUCKET mal escrito, usa la tabla |
-| "npm run build failed" | Frontend | Revisa que compile local primero |
-
----
-
-# 📞 Contacto DevOps
-
-Para obtener las credenciales AWS o reportar problemas:
-- **Email**: awsproyecto26@gmail.com
-- **Repositorio Infra**: [infra-bancaria-terraform](enlace-a-tu-repo)
+| Error | Solución |
+|-------|----------|
+| "repository does not exist" | ECR_REPO mal escrito, usa la tabla |
+| "deployment not found" | DevOps debe crear el deployment inicial |
+| "connection refused" | Security Group no permite conexión |
