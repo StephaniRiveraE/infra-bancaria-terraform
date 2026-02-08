@@ -116,6 +116,12 @@ variable "eks_log_retention_days" {
   default     = 7
 }
 
+variable "enable_eks_container_insights" {
+  description = "Habilitar el addon de CloudWatch Observability (Container Insights). Targa ~10 min en desplegar."
+  type        = bool
+  default     = false
+}
+
 # ============================================================================
 # ELASTICACHE COST CONTROL
 # ============================================================================
