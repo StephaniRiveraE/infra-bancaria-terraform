@@ -137,12 +137,23 @@ Cada banco tiene su propio Gateway expuesto via Application Load Balancer:
 > ```
 > Ver instrucciones completas en: `k8s-manifests/ingress/README.md`
 
-### 📝 Configurar en GitHub
+### 📝 Configurar en GitHub (Pasos para el Desarrollador)
 
-1. Ve a tu repositorio en GitHub
-2. **Settings** → **Secrets and variables** → **Actions** → pestaña **Variables**
-3. Click en **New repository variable**
-4. Agrega la URL de TU banco:
+Los desarrolladores deben configurar la URL de su banco siguiendo estos pasos:
+
+1. Ve a **tu repositorio** de frontend en GitHub.
+2. Haz clic en la pestaña superior **Settings** (Configuración).
+3. En el menú de la izquierda, busca la sección **Secrets and variables** y haz clic en **Actions**.
+4. Selecciona la pestaña **Variables** (es la segunda pestaña, NO uses la de Secrets).
+5. Haz clic en el botón verde **New repository variable**.
+6. Agrega la variable con estos datos:
+   - **Name:** `API_URL`
+   - **Value:** (Copia la URL de la tabla de arriba según tu banco)
+
+---
+
+**Ejemplo de configuración:**
+
 
 **Ejemplo para ArcBank:**
 

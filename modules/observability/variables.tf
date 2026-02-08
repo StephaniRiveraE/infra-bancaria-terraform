@@ -79,3 +79,9 @@ variable "eks_cluster_name" {
   default     = "eks-banca-ecosistema"
 }
 
+variable "enable_eks_container_insights" {
+  description = "Habilitar el addon de CloudWatch Observability (Container Insights). Tarda ~10 min en desplegar."
+  type        = bool
+  default     = false
+}
+
