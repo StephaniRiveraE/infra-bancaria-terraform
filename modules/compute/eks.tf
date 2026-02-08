@@ -19,6 +19,12 @@ resource "aws_eks_cluster" "bancario" {
     security_group_ids = [aws_security_group.eks_cluster_sg[0].id]
   }
 
+  # MODERNIZACIÓN: Habilitar modo mixto (API + ConfigMap) para evitar editar el configmap manualmente
+  access_config {
+    authentication_mode                         = "API_AND_CONFIG_MAP"
+    bootstrap_cluster_creator_admin_permissions = true
+  }
+
   # OPTIMIZACIÓN: Solo logs esenciales para reducir costos
   enabled_cluster_log_types = ["api", "audit"]
 
@@ -69,4 +75,30 @@ resource "aws_security_group_rule" "cluster_ingress_pods" {
   cidr_blocks       = ["10.0.0.0/16"]
   security_group_id = aws_security_group.eks_cluster_sg[0].id
   description       = "Allow pods to communicate with cluster API"
+}
+
+# ============================================================================
+# ACCESO CI/CD - Mapeo de Usuario IAM a Kubernetes Access Entry
+# ============================================================================
+
+resource "aws_eks_access_entry" "cicd_user" {
+  count = var.eks_enabled && var.cicd_user_arn != "" ? 1 : 0
+
+  cluster_name      = aws_eks_cluster.bancario[0].name
+  principal_arn     = var.cicd_user_arn
+  type              = "STANDARD"
+}
+
+resource "aws_eks_access_policy_association" "cicd_admin" {
+  count = var.eks_enabled && var.cicd_user_arn != "" ? 1 : 0
+
+  cluster_name  = aws_eks_cluster.bancario[0].name
+  policy_arn    = "arn:aws:eks::aws:cluster-access-policy/AmazonEKSClusterAdminPolicy"
+  principal_arn = var.cicd_user_arn
+
+  access_scope {
+    type = "cluster"
+  }
+
+  depends_on = [aws_eks_access_entry.cicd_user]
 }

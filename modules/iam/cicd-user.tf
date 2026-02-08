@@ -53,7 +53,8 @@ resource "aws_iam_policy" "cicd_eks" {
         Effect = "Allow"
         Action = [
           "eks:DescribeCluster",
-          "eks:ListClusters"
+          "eks:ListClusters",
+          "eks:AccessKubernetesApi"
         ]
         Resource = "*"
       }
