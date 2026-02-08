@@ -49,3 +49,9 @@ variable "eks_log_retention_days" {
   type        = number
   default     = 7
 }
+
+variable "cicd_user_arn" {
+  description = "ARN del usuario IAM de CI/CD para mapeo de acceso en EKS"
+  type        = string
+  default     = ""
+}

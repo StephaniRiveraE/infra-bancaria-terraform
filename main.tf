@@ -75,6 +75,7 @@ module "compute" {
   common_tags            = var.common_tags
   eks_enabled            = var.eks_enabled            # Controla creación del stack EKS
   eks_log_retention_days = var.eks_log_retention_days # Días de retención de logs
+  cicd_user_arn          = module.iam.cicd_user_arn
 }
 
 # ============================================================================
