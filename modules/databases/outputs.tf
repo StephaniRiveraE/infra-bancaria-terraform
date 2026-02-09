@@ -1,7 +1,9 @@
+/*
 output "rds_endpoints" {
   description = "Endpoints de las instancias RDS"
   value       = { for k, v in aws_db_instance.rds_instances : k => v.endpoint }
 }
+*/
 
 output "rds_secret_arns" {
   description = "ARNs de los secretos en Secrets Manager"
