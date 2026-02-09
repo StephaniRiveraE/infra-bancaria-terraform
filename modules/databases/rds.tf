@@ -5,11 +5,10 @@ resource "random_password" "db_passwords" {
   override_special = "!#$%&*+-=?^_"
 }
 
-/*
 resource "aws_db_instance" "rds_instances" {
   for_each = var.entidades
 
-  identifier        = "rds-${each.key}-v3"
+  identifier        = "rds-${each.key}-vcreation" # Usamos un nombre nuevo para asegurar limpieza total
   allocated_storage = var.rds_storage_gb
   db_name           = each.value
   engine            = "postgres"
@@ -26,17 +25,17 @@ resource "aws_db_instance" "rds_instances" {
   storage_encrypted   = true
   skip_final_snapshot = true
 
-  # Ignorar cambios que causan errores cuando RDS está stopped
-  # AWS no permite modificar RDS en estado stopped
-  # lifecycle block removido para permitir la recreación y sincronización de red
-
-
   tags = merge(var.common_tags, {
     Name   = "rds-${each.key}"
     Entity = title(each.key)
   })
+
+  # Se recomienda activar esto después de que el estado sea 'available'
+  # lifecycle {
+  #   ignore_changes = all
+  # }
 }
-*/
+
 resource "aws_secretsmanager_secret" "db_secrets" {
   for_each    = var.entidades
   name        = "rds-secret-${each.key}-v2"
@@ -49,7 +48,6 @@ resource "aws_secretsmanager_secret" "db_secrets" {
   })
 }
 
-/*
 resource "aws_secretsmanager_secret_version" "db_credentials" {
   for_each  = aws_secretsmanager_secret.db_secrets
   secret_id = each.value.id
@@ -63,4 +61,3 @@ resource "aws_secretsmanager_secret_version" "db_credentials" {
     db_name  = aws_db_instance.rds_instances[each.key].db_name
   })
 }
-*/
