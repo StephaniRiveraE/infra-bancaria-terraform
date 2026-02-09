@@ -158,6 +158,10 @@ resource "aws_apigatewayv2_integration" "integration_nucleo" {
   request_parameters = {
     "overwrite:header.x-origin-secret" = var.internal_secret_value
   }
+
+  lifecycle {
+    create_before_destroy = true
+  }
 }
 
 # ============================================================================
@@ -178,6 +182,10 @@ resource "aws_apigatewayv2_integration" "integration_compensacion" {
     "overwrite:path"                   = "/api/v2/compensation/upload"
     "overwrite:header.x-origin-secret" = var.internal_secret_value
   }
+
+  lifecycle {
+    create_before_destroy = true
+  }
 }
 
 # ============================================================================
@@ -197,6 +205,10 @@ resource "aws_apigatewayv2_integration" "integration_contabilidad" {
     "overwrite:path"                   = "/api/v2/switch/funding"
     "overwrite:header.x-origin-secret" = var.internal_secret_value
   }
+
+  lifecycle {
+    create_before_destroy = true
+  }
 }
 
 # ============================================================================
@@ -211,6 +223,10 @@ resource "aws_apigatewayv2_integration" "integration_health" {
   integration_uri        = aws_lb_listener.apim_backend_listener.arn
   integration_method     = "GET"
   payload_format_version = "1.0"
+
+  lifecycle {
+    create_before_destroy = true
+  }
 }
 
 # ============================================================================
