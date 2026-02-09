@@ -8,7 +8,7 @@ resource "random_password" "db_passwords" {
 resource "aws_db_instance" "rds_instances" {
   for_each = var.entidades
 
-  identifier        = "rds-${each.key}"
+  identifier        = "rds-${each.key}-v3"
   allocated_storage = var.rds_storage_gb
   db_name           = each.value
   engine            = "postgres"
@@ -27,11 +27,8 @@ resource "aws_db_instance" "rds_instances" {
 
   # Ignorar cambios que causan errores cuando RDS está stopped
   # AWS no permite modificar RDS en estado stopped
-  # TEMPORAL: Comentado para arreglar error Incompatible-network
-  # Una vez que las RDS estén en estado 'available' o 'stopped', se puede descomentar.
-  # lifecycle {
-  #   ignore_changes = all 
-  # }
+  # lifecycle block removido para permitir la recreación y sincronización de red
+
 
   tags = merge(var.common_tags, {
     Name   = "rds-${each.key}"
