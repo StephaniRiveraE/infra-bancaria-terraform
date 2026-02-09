@@ -49,6 +49,7 @@ resource "aws_secretsmanager_secret" "db_secrets" {
   })
 }
 
+/*
 resource "aws_secretsmanager_secret_version" "db_credentials" {
   for_each  = aws_secretsmanager_secret.db_secrets
   secret_id = each.value.id
@@ -62,3 +63,4 @@ resource "aws_secretsmanager_secret_version" "db_credentials" {
     db_name  = aws_db_instance.rds_instances[each.key].db_name
   })
 }
+*/
