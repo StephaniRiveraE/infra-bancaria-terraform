@@ -1,5 +1,3 @@
-# Security Groups are now managed in the networking module and passed as variables.
-
 
 resource "aws_apigatewayv2_api" "apim_gateway" {
   name          = "apim-switch-gateway"
@@ -65,6 +63,3 @@ resource "aws_apigatewayv2_stage" "apim_stage" {
     Component = "APIM"
   })
 }
-
-
-

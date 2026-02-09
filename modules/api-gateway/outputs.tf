@@ -1,7 +1,3 @@
-# ============================================================================
-# API GATEWAY OUTPUTS
-# ============================================================================
-
 output "apim_gateway_endpoint" {
   description = "Endpoint HTTPS del API Gateway"
   value       = aws_apigatewayv2_api.apim_gateway.api_endpoint
@@ -22,10 +18,6 @@ output "apim_vpc_link_id" {
   value       = aws_apigatewayv2_vpc_link.apim_vpc_link.id
 }
 
-# ============================================================================
-# ALB OUTPUTS - Para registro de targets desde EKS
-# ============================================================================
-
 output "alb_arn" {
   description = "ARN del ALB interno"
   value       = aws_lb.apim_backend_alb.arn
@@ -35,10 +27,6 @@ output "alb_dns_name" {
   description = "DNS del ALB interno"
   value       = aws_lb.apim_backend_alb.dns_name
 }
-
-# ============================================================================
-# TARGET GROUPS - Para TargetGroupBinding de AWS Load Balancer Controller
-# ============================================================================
 
 output "tg_nucleo_arn" {
   description = "ARN del Target Group de ms-nucleo (puerto 8082)"
