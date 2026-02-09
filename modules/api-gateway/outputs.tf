@@ -21,3 +21,36 @@ output "apim_vpc_link_id" {
   description = "ID del VPC Link"
   value       = aws_apigatewayv2_vpc_link.apim_vpc_link.id
 }
+
+# ============================================================================
+# ALB OUTPUTS - Para registro de targets desde EKS
+# ============================================================================
+
+output "alb_arn" {
+  description = "ARN del ALB interno"
+  value       = aws_lb.apim_backend_alb.arn
+}
+
+output "alb_dns_name" {
+  description = "DNS del ALB interno"
+  value       = aws_lb.apim_backend_alb.dns_name
+}
+
+# ============================================================================
+# TARGET GROUPS - Para TargetGroupBinding de AWS Load Balancer Controller
+# ============================================================================
+
+output "tg_nucleo_arn" {
+  description = "ARN del Target Group de ms-nucleo (puerto 8082)"
+  value       = aws_lb_target_group.tg_nucleo.arn
+}
+
+output "tg_compensacion_arn" {
+  description = "ARN del Target Group de ms-compensacion (puerto 8084)"
+  value       = aws_lb_target_group.tg_compensacion.arn
+}
+
+output "tg_contabilidad_arn" {
+  description = "ARN del Target Group de ms-contabilidad (puerto 8083)"
+  value       = aws_lb_target_group.tg_contabilidad.arn
+}
