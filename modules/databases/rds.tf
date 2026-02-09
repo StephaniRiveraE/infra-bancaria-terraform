@@ -27,9 +27,11 @@ resource "aws_db_instance" "rds_instances" {
 
   # Ignorar cambios que causan errores cuando RDS está stopped
   # AWS no permite modificar RDS en estado stopped
-  lifecycle {
-    ignore_changes = all # Ignorar TODOS los cambios para evitar errores con RDS stopped
-  }
+  # TEMPORAL: Comentado para arreglar error Incompatible-network
+  # Una vez que las RDS estén en estado 'available' o 'stopped', se puede descomentar.
+  # lifecycle {
+  #   ignore_changes = all 
+  # }
 
   tags = merge(var.common_tags, {
     Name   = "rds-${each.key}"
