@@ -5,6 +5,7 @@ resource "random_password" "db_passwords" {
   override_special = "!#$%&*+-=?^_"
 }
 
+/*
 resource "aws_db_instance" "rds_instances" {
   for_each = var.entidades
 
@@ -35,6 +36,7 @@ resource "aws_db_instance" "rds_instances" {
     Entity = title(each.key)
   })
 }
+*/
 resource "aws_secretsmanager_secret" "db_secrets" {
   for_each    = var.entidades
   name        = "rds-secret-${each.key}-v2"
