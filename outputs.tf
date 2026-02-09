@@ -32,10 +32,12 @@ output "ecr_repository_urls" {
 }
 
 # Outputs de Databases
+/*
 output "rds_endpoints" {
   description = "Endpoints de las instancias RDS"
   value       = module.databases.rds_endpoints
 }
+*/
 
 output "rds_secret_arns" {
   description = "ARNs de los secretos en Secrets Manager"
