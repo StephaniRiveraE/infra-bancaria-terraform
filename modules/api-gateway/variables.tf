@@ -1,8 +1,3 @@
-# ============================================================================
-# VARIABLES - Módulo API Gateway
-# ============================================================================
-
-# Variables generales
 variable "project_name" {
   description = "Nombre del proyecto"
   type        = string
@@ -24,7 +19,6 @@ variable "aws_region" {
   default     = "us-east-2"
 }
 
-# Variables de red
 variable "vpc_id" {
   description = "ID de la VPC"
   type        = string
@@ -45,7 +39,6 @@ variable "apim_vpc_link_security_group_id" {
   type        = string
 }
 
-# Variables de seguridad (desde security-certs)
 variable "cognito_endpoint" {
   description = "Endpoint del User Pool de Cognito"
   type        = string
@@ -62,14 +55,12 @@ variable "internal_secret_value" {
   sensitive   = true
 }
 
-# Variables del backend
 variable "apim_backend_port" {
   description = "Puerto del backend"
   type        = number
   default     = 8080
 }
 
-# Variables de dominio personalizado (mTLS)
 variable "apim_enable_custom_domain" {
   description = "Habilitar Custom Domain con mTLS"
   type        = bool
@@ -88,7 +79,6 @@ variable "apim_acm_certificate_arn" {
   default     = ""
 }
 
-# Variables de CloudWatch/Logs
 variable "apim_log_retention_days" {
   description = "Días de retención para logs de CloudWatch"
   type        = number
@@ -101,7 +91,6 @@ variable "apim_alarm_sns_topic_arn" {
   default     = ""
 }
 
-# Variables del Circuit Breaker
 variable "apim_circuit_breaker_error_threshold" {
   description = "Número de errores 5xx para abrir el circuit breaker"
   type        = number

@@ -1,8 +1,3 @@
-# ============================================================================
-# CIRCUIT BREAKER - Patrón de resiliencia para el Switch
-# Este componente usa el SNS topic de alarmas del módulo observability
-# ============================================================================
-
 resource "aws_cloudwatch_metric_alarm" "backend_5xx_errors" {
   alarm_name          = "${var.environment}-switch-backend-5xx-errors"
   comparison_operator = "GreaterThanOrEqualToThreshold"
@@ -20,7 +15,6 @@ resource "aws_cloudwatch_metric_alarm" "backend_5xx_errors" {
     Stage = var.environment
   }
 
-  # Usa el SNS topic que se pasa desde observability (si está configurado)
   alarm_actions = var.apim_alarm_sns_topic_arn != "" ? [var.apim_alarm_sns_topic_arn] : []
   ok_actions    = var.apim_alarm_sns_topic_arn != "" ? [var.apim_alarm_sns_topic_arn] : []
 
@@ -56,10 +50,6 @@ resource "aws_cloudwatch_metric_alarm" "backend_high_latency" {
   })
 }
 
-# ============================================================================
-# DYNAMODB - Estado del Circuit Breaker
-# ============================================================================
-
 resource "aws_dynamodb_table" "circuit_breaker_state" {
   name         = "${var.environment}-switch-circuit-breaker-state"
   billing_mode = "PAY_PER_REQUEST"
@@ -80,10 +70,6 @@ resource "aws_dynamodb_table" "circuit_breaker_state" {
     Component = "APIM-CircuitBreaker"
   })
 }
-
-# ============================================================================
-# LAMBDA - Handler del Circuit Breaker
-# ============================================================================
 
 resource "aws_lambda_function" "circuit_breaker_handler" {
   function_name = "${var.environment}-switch-circuit-breaker"
@@ -167,7 +153,6 @@ PYTHON
   }
 }
 
-# Suscripción SNS solo si hay un topic definido
 resource "aws_sns_topic_subscription" "circuit_breaker_lambda" {
   count     = var.apim_alarm_sns_topic_arn != "" ? 1 : 0
   topic_arn = var.apim_alarm_sns_topic_arn
@@ -183,10 +168,6 @@ resource "aws_lambda_permission" "circuit_breaker_sns" {
   principal     = "sns.amazonaws.com"
   source_arn    = var.apim_alarm_sns_topic_arn
 }
-
-# ============================================================================
-# IAM - Rol para Lambda del Circuit Breaker
-# ============================================================================
 
 resource "aws_iam_role" "circuit_breaker_lambda_role" {
   name = "${var.environment}-circuit-breaker-lambda-role"
@@ -225,10 +206,6 @@ resource "aws_iam_role_policy" "circuit_breaker_lambda_policy" {
     ]
   })
 }
-
-# ============================================================================
-# OUTPUTS
-# ============================================================================
 
 output "circuit_breaker_lambda_arn" {
   description = "ARN de la Lambda del Circuit Breaker"

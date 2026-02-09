@@ -1,0 +1,259 @@
+openapi: 3.0.3
+info:
+  title: API Gateway Switch Transaccional
+  description: |
+    API Gateway para la interacción entre Bancos y el Switch Transaccional.
+    Maneja transferencias, consultas de cuentas, devoluciones y compensación.
+  version: 1.0.0
+  contact:
+    name: Equipo de Infraestructura
+    email: soporte@digiconecu.com
+
+servers:
+  - url: https://api.dev.digiconecu.com
+    description: Servidor de Desarrollo
+  - url: https://api.staging.digiconecu.com
+    description: Servidor de Staging
+  - url: https://api.digiconecu.com
+    description: Servidor de Producción
+
+components:
+  securitySchemes:
+    CognitoAuth:
+      type: oauth2
+      flows:
+        clientCredentials:
+          tokenUrl: https://auth.switch-api.com/oauth2/token
+          scopes:
+            https://switch-api.com/transfers.write: Permiso de escritura para transferencias
+
+  schemas:
+    TransferRequest:
+      type: object
+      required:
+        - instructionId
+        - amount
+        - currency
+        - debtorAccount
+        - creditorAccount
+      properties:
+        instructionId:
+          type: string
+          example: "20230915123456789"
+        amount:
+          type: number
+          format: double
+          example: 150.00
+        currency:
+          type: string
+          example: "USD"
+        debtorAccount:
+          type: string
+          example: "1234567890"
+        creditorAccount:
+          type: string
+          example: "0987654321"
+
+    TransferResponse:
+      type: object
+      properties:
+        status:
+          type: string
+          example: "ACCEPTED"
+        transactionId:
+          type: string
+          example: "TX-987654321"
+
+    AccountLookupRequest:
+      type: object
+      required:
+        - accountNumber
+        - bankId
+      properties:
+        accountNumber:
+          type: string
+          example: "1234567890"
+        bankId:
+          type: string
+          example: "BANCO001"
+
+    AccountLookupResponse:
+      type: object
+      properties:
+        accountName:
+          type: string
+          example: "Juan Pérez"
+        status:
+          type: string
+          example: "ACTIVE"
+
+    ReturnRequest:
+      type: object
+      required:
+        - originalInstructionId
+        - reasonCode
+      properties:
+        originalInstructionId:
+          type: string
+          example: "20230915123456789"
+        reasonCode:
+          type: string
+          example: "AC03"
+
+    FundingResponse:
+      type: object
+      properties:
+        balance:
+          type: number
+          example: 50000.00
+        currency:
+          type: string
+          example: "USD"
+        lastUpdated:
+          type: string
+          format: date-time
+
+security:
+  - CognitoAuth:
+      - https://switch-api.com/transfers.write
+
+paths:
+
+  # Microservicio Nucleo
+
+  /api/v2/switch/transfers:
+    post:
+      summary: Crear transferencia (pacs.008)
+      operationId: createTransfer
+      tags:
+        - Transferencias
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/TransferRequest'
+      responses:
+        '201':
+          description: Transferencia aceptada
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/TransferResponse'
+        '400':
+          description: Datos inválidos
+        '401':
+          description: No autorizado
+
+  /api/v2/switch/transfers/{instructionId}:
+    get:
+      summary: Consultar estado de transferencia
+      operationId: getTransferStatus
+      tags:
+        - Transferencias
+      parameters:
+        - name: instructionId
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Estado de la transferencia
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/TransferResponse'
+
+  /api/v2/switch/account-lookup:
+    post:
+      summary: Consulta de Titularidad (Account Lookup)
+      operationId: accountLookup
+      tags:
+        - Cuentas
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/AccountLookupRequest'
+      responses:
+        '200':
+          description: Datos de la cuenta
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AccountLookupResponse'
+
+  /api/v2/switch/returns:
+    post:
+      summary: Procesar Devolución/Reverso (pacs.004)
+      operationId: processReturn
+      tags:
+        - Devoluciones
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ReturnRequest'
+      responses:
+        '202':
+          description: Devolución aceptada par procesamiento
+
+  /api/v2/switch/health:
+    get:
+      summary: Health Check - Ms Nucleo
+      security: [] 
+      tags:
+        - Health
+      responses:
+        '200':
+          description: Servicio saludable
+
+  # Microservicio Compensacion
+
+  /api/v2/compensation/upload:
+    post:
+      summary: Carga de archivos de compensación
+      operationId: uploadCompensationFile
+      tags:
+        - Compensación
+      requestBody:
+        content:
+          multipart/form-data:
+            schema:
+              type: object
+              properties:
+                file:
+                  type: string
+                  format: binary
+      responses:
+        '202':
+          description: Archivo recibido
+
+  /api/v2/compensation/health:
+    get:
+      summary: Health Check - Ms Compensacion
+      security: [] 
+      tags:
+        - Health
+      responses:
+        '200':
+          description: Servicio saludable
+
+  # Microservicio Contabilidad
+
+  /api/v2/switch/funding:
+    post:
+      summary: Consulta de Fondeo/Saldos
+      operationId: getFunding
+      tags:
+        - Fondeo
+      responses:
+        '200':
+          description: Saldo actual
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/FundingResponse'

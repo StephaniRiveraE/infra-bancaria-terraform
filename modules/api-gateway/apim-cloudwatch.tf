@@ -1,8 +1,3 @@
-# ============================================================================
-# APIM CLOUDWATCH - Logs solamente
-# NOTA: Las alarmas del API Gateway están centralizadas en el módulo observability
-# ============================================================================
-
 resource "aws_cloudwatch_log_group" "apim_access_logs" {
   name              = "/aws/apigateway/apim-switch-${var.environment}"
   retention_in_days = var.apim_log_retention_days
@@ -12,11 +7,6 @@ resource "aws_cloudwatch_log_group" "apim_access_logs" {
     Component = "APIM"
   })
 }
-
-# ============================================================================
-# DASHBOARD DEL APIM - Métricas específicas del API Gateway
-# Este dashboard se mantiene aquí porque es específico del componente APIM
-# ============================================================================
 
 resource "aws_cloudwatch_dashboard" "apim_dashboard" {
   dashboard_name = "APIM-Switch-${var.environment}"

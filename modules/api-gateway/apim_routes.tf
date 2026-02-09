@@ -1,7 +1,3 @@
-# ============================================================================
-# AUTHORIZER (CAPA 1: IDENTIDAD)
-# Valida que el Token JWT venga firmado por tu Cognito
-# ============================================================================
 resource "aws_apigatewayv2_authorizer" "cognito_auth" {
   api_id           = aws_apigatewayv2_api.apim_gateway.id
   authorizer_type  = "JWT"
@@ -14,10 +10,6 @@ resource "aws_apigatewayv2_authorizer" "cognito_auth" {
   }
 }
 
-# ============================================================================
-# LOAD BALANCER INTERNO (DESTINO PRIVADO)
-# ALB con múltiples Target Groups por microservicio
-# ============================================================================
 resource "aws_lb" "apim_backend_alb" {
   name               = "apim-backend-alb"
   internal           = true
@@ -27,11 +19,6 @@ resource "aws_lb" "apim_backend_alb" {
   tags               = merge(var.common_tags, { Name = "alb-apim-backend" })
 }
 
-# ============================================================================
-# TARGET GROUPS - Uno por microservicio
-# ============================================================================
-
-# Target Group para ms-nucleo (Transacciones, Accounts, Returns)
 resource "aws_lb_target_group" "tg_nucleo" {
   name        = "apim-tg-nucleo"
   port        = 8082
@@ -52,7 +39,6 @@ resource "aws_lb_target_group" "tg_nucleo" {
   tags = merge(var.common_tags, { Name = "tg-ms-nucleo" })
 }
 
-# Target Group para ms-compensacion (Upload de archivos)
 resource "aws_lb_target_group" "tg_compensacion" {
   name        = "apim-tg-compensacion"
   port        = 8084
@@ -73,7 +59,6 @@ resource "aws_lb_target_group" "tg_compensacion" {
   tags = merge(var.common_tags, { Name = "tg-ms-compensacion" })
 }
 
-# Target Group para ms-contabilidad (Fondeo/Saldos)
 resource "aws_lb_target_group" "tg_contabilidad" {
   name        = "apim-tg-contabilidad"
   port        = 8083
@@ -94,9 +79,6 @@ resource "aws_lb_target_group" "tg_contabilidad" {
   tags = merge(var.common_tags, { Name = "tg-ms-contabilidad" })
 }
 
-# ============================================================================
-# LISTENER - Con reglas de ruteo por path
-# ============================================================================
 resource "aws_lb_listener" "apim_backend_listener" {
   load_balancer_arn = aws_lb.apim_backend_alb.arn
   port              = 80
@@ -108,7 +90,6 @@ resource "aws_lb_listener" "apim_backend_listener" {
   }
 }
 
-# Regla: /api/v2/compensation/* -> ms-compensacion
 resource "aws_lb_listener_rule" "route_compensacion" {
   listener_arn = aws_lb_listener.apim_backend_listener.arn
   priority     = 100
@@ -125,7 +106,6 @@ resource "aws_lb_listener_rule" "route_compensacion" {
   }
 }
 
-# Regla: /funding* -> ms-contabilidad
 resource "aws_lb_listener_rule" "route_funding" {
   listener_arn = aws_lb_listener.apim_backend_listener.arn
   priority     = 200
@@ -142,9 +122,6 @@ resource "aws_lb_listener_rule" "route_funding" {
   }
 }
 
-# ============================================================================
-# INTEGRACIÓN: ms-nucleo (para todas las rutas de /switch/)
-# ============================================================================
 resource "aws_apigatewayv2_integration" "integration_nucleo" {
   api_id = aws_apigatewayv2_api.apim_gateway.id
 
@@ -164,9 +141,6 @@ resource "aws_apigatewayv2_integration" "integration_nucleo" {
   }
 }
 
-# ============================================================================
-# INTEGRACIÓN: ms-compensacion (timeout extendido para uploads)
-# ============================================================================
 resource "aws_apigatewayv2_integration" "integration_compensacion" {
   api_id = aws_apigatewayv2_api.apim_gateway.id
 
@@ -188,9 +162,6 @@ resource "aws_apigatewayv2_integration" "integration_compensacion" {
   }
 }
 
-# ============================================================================
-# INTEGRACIÓN: ms-contabilidad (para /funding)
-# ============================================================================
 resource "aws_apigatewayv2_integration" "integration_contabilidad" {
   api_id = aws_apigatewayv2_api.apim_gateway.id
 
@@ -211,9 +182,6 @@ resource "aws_apigatewayv2_integration" "integration_contabilidad" {
   }
 }
 
-# ============================================================================
-# INTEGRACIÓN: Health Checks (sin modificar headers)
-# ============================================================================
 resource "aws_apigatewayv2_integration" "integration_health" {
   api_id = aws_apigatewayv2_api.apim_gateway.id
 
@@ -229,9 +197,6 @@ resource "aws_apigatewayv2_integration" "integration_health" {
   }
 }
 
-# ============================================================================
-# RUTA 1: POST /api/v2/switch/transfers (Crear transferencia - pacs.008)
-# ============================================================================
 resource "aws_apigatewayv2_route" "transfers_post" {
   api_id    = aws_apigatewayv2_api.apim_gateway.id
   route_key = "POST /api/v2/switch/transfers"
@@ -242,9 +207,6 @@ resource "aws_apigatewayv2_route" "transfers_post" {
   authorization_scopes = ["https://switch-api.com/transfers.write"]
 }
 
-# ============================================================================
-# RUTA 2: GET /api/v2/switch/transfers/{instructionId} (Consulta estado)
-# ============================================================================
 resource "aws_apigatewayv2_route" "transfers_get_status" {
   api_id    = aws_apigatewayv2_api.apim_gateway.id
   route_key = "GET /api/v2/switch/transfers/{instructionId}"
@@ -254,9 +216,6 @@ resource "aws_apigatewayv2_route" "transfers_get_status" {
   authorizer_id      = aws_apigatewayv2_authorizer.cognito_auth.id
 }
 
-# ============================================================================
-# RUTA 3: POST /api/v2/switch/accounts (Account Lookup - acmt.023)
-# ============================================================================
 resource "aws_apigatewayv2_route" "accounts_lookup" {
   api_id    = aws_apigatewayv2_api.apim_gateway.id
   route_key = "POST /api/v2/switch/account-lookup"
@@ -267,9 +226,6 @@ resource "aws_apigatewayv2_route" "accounts_lookup" {
   authorization_scopes = ["https://switch-api.com/transfers.write"]
 }
 
-# ============================================================================
-# RUTA 4: POST /api/v2/switch/transfers/return (Devoluciones - pacs.004)
-# ============================================================================
 resource "aws_apigatewayv2_route" "transfers_return" {
   api_id    = aws_apigatewayv2_api.apim_gateway.id
   route_key = "POST /api/v2/switch/returns"
@@ -280,9 +236,6 @@ resource "aws_apigatewayv2_route" "transfers_return" {
   authorization_scopes = ["https://switch-api.com/transfers.write"]
 }
 
-# ============================================================================
-# RUTA 5: POST /api/v2/compensation/upload (Carga de archivos)
-# ============================================================================
 resource "aws_apigatewayv2_route" "compensation_upload" {
   api_id    = aws_apigatewayv2_api.apim_gateway.id
   route_key = "POST /api/v2/compensation/upload"
@@ -293,9 +246,6 @@ resource "aws_apigatewayv2_route" "compensation_upload" {
   authorization_scopes = ["https://switch-api.com/transfers.write"]
 }
 
-# ============================================================================
-# RUTA 6: GET /funding (Consulta de fondeo/saldos)
-# ============================================================================
 resource "aws_apigatewayv2_route" "funding_query" {
   api_id    = aws_apigatewayv2_api.apim_gateway.id
   route_key = "POST /api/v2/switch/funding"
@@ -305,9 +255,6 @@ resource "aws_apigatewayv2_route" "funding_query" {
   authorizer_id      = aws_apigatewayv2_authorizer.cognito_auth.id
 }
 
-# ============================================================================
-# RUTA 7: GET /api/v2/switch/health (Health Check - SIN autenticación)
-# ============================================================================
 resource "aws_apigatewayv2_route" "health_switch" {
   api_id    = aws_apigatewayv2_api.apim_gateway.id
   route_key = "GET /api/v2/switch/health"
@@ -316,9 +263,6 @@ resource "aws_apigatewayv2_route" "health_switch" {
   authorization_type = "NONE"
 }
 
-# ============================================================================
-# RUTA 8: GET /api/v2/compensation/health (Health Check - SIN autenticación)
-# ============================================================================
 resource "aws_apigatewayv2_route" "health_compensation" {
   api_id    = aws_apigatewayv2_api.apim_gateway.id
   route_key = "GET /api/v2/compensation/health"
@@ -326,4 +270,3 @@ resource "aws_apigatewayv2_route" "health_compensation" {
 
   authorization_type = "NONE"
 }
-
