@@ -1,0 +1,79 @@
+﻿# Generado automaticamente - NO EDITAR MANUALMENTE
+# Microservicio: service-clientes
+# Namespace: bantec
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: service-clientes
+  namespace: bantec
+  labels:
+    app: service-clientes
+    bank: bantec
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: service-clientes
+  template:
+    metadata:
+      labels:
+        app: service-clientes
+        bank: bantec
+    spec:
+      containers:
+        - name: service-clientes
+          image: 851112555783.dkr.ecr.us-east-2.amazonaws.com/bantec-service-clientes:latest
+          ports:
+            - containerPort: 8080
+          resources:
+            requests:
+              memory: "512Mi"
+              cpu: "250m"
+            limits:
+              memory: "1Gi"
+              cpu: "500m"
+          env:
+            - name: SPRING_PROFILES_ACTIVE
+              value: "prod"
+            - name: SPRING_DATASOURCE_URL
+              valueFrom:
+                secretKeyRef:
+                  name: bantec-db-credentials
+                  key: url
+            - name: SPRING_DATASOURCE_USERNAME
+              valueFrom:
+                secretKeyRef:
+                  name: bantec-db-credentials
+                  key: username
+            - name: SPRING_DATASOURCE_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: bantec-db-credentials
+                  key: password
+          livenessProbe:
+            httpGet:
+              path: /actuator/health/liveness
+              port: 8080
+            initialDelaySeconds: 120
+            periodSeconds: 10
+            failureThreshold: 5
+          readinessProbe:
+            httpGet:
+              path: /actuator/health/readiness
+              port: 8080
+            initialDelaySeconds: 60
+            periodSeconds: 5
+            failureThreshold: 3
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: service-clientes
+  namespace: bantec
+spec:
+  type: ClusterIP
+  ports:
+    - port: 80
+      targetPort: 8080
+  selector:
+    app: service-clientes
