@@ -1,0 +1,103 @@
+﻿# Generado automaticamente - NO EDITAR MANUALMENTE
+# Microservicio: switch-ms-nucleo
+# Namespace: switch
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: switch-ms-nucleo
+  namespace: switch
+  labels:
+    app: switch-ms-nucleo
+    bank: switch
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: switch-ms-nucleo
+  template:
+    metadata:
+      labels:
+        app: switch-ms-nucleo
+        bank: switch
+    spec:
+      containers:
+        - name: switch-ms-nucleo
+          image: 851112555783.dkr.ecr.us-east-2.amazonaws.com/switch-ms-nucleo:3ef9fd438c7d97ffd4a46d058533ede9f13f88b0
+          ports:
+            - containerPort: 8082
+          resources:
+            requests:
+              memory: "512Mi"
+              cpu: "250m"
+            limits:
+              memory: "1Gi"
+              cpu: "500m"
+          env:
+            - name: SPRING_PROFILES_ACTIVE
+              value: "prod"
+            - name: SPRING_DATASOURCE_URL
+              valueFrom:
+                secretKeyRef:
+                  name: switch-db-credentials
+                  key: nucleo-url
+            - name: SPRING_DATASOURCE_USERNAME
+              valueFrom:
+                secretKeyRef:
+                  name: switch-db-credentials
+                  key: nucleo-username
+            - name: SPRING_DATASOURCE_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: switch-db-credentials
+                  key: nucleo-password
+            - name: SPRING_JPA_HIBERNATE_DDL_AUTO
+              value: "update"
+            - name: RABBITMQ_HOST
+              valueFrom:
+                secretKeyRef:
+                  name: rabbitmq-credentials
+                  key: host
+            - name: RABBITMQ_PORT
+              valueFrom:
+                secretKeyRef:
+                  name: rabbitmq-credentials
+                  key: port
+            - name: RABBITMQ_USERNAME
+              valueFrom:
+                secretKeyRef:
+                  name: rabbitmq-credentials
+                  key: username
+            - name: RABBITMQ_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: rabbitmq-credentials
+                  key: password
+          livenessProbe:
+            httpGet:
+              path: /actuator/health/liveness
+              port: 8082
+            initialDelaySeconds: 120
+            periodSeconds: 10
+            timeoutSeconds: 5
+            failureThreshold: 5
+          readinessProbe:
+            httpGet:
+              path: /actuator/health/readiness
+              port: 8082
+            initialDelaySeconds: 180
+            periodSeconds: 10
+            timeoutSeconds: 5
+            failureThreshold: 10
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: switch-ms-nucleo
+  namespace: switch
+spec:
+  type: ClusterIP
+  ports:
+    - port: 80
+      targetPort: 8082
+  selector:
+    app: switch-ms-nucleo
