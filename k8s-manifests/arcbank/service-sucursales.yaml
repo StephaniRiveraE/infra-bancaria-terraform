@@ -1,0 +1,79 @@
+﻿# Microservicio: service-sucursales (DynamoDB)
+# Namespace: arcbank
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: service-sucursales
+  namespace: arcbank
+  labels:
+    app: service-sucursales
+    bank: arcbank
+spec:
+  replicas: 1
+  strategy:
+    type: Recreate
+  selector:
+    matchLabels:
+      app: service-sucursales
+  template:
+    metadata:
+      labels:
+        app: service-sucursales
+        bank: arcbank
+    spec:
+      containers:
+        - name: service-sucursales
+          image: 851112555783.dkr.ecr.us-east-2.amazonaws.com/arcbank-service-sucursales:latest
+          ports:
+            - containerPort: 8080
+          resources:
+            requests:
+              memory: "512Mi"
+              cpu: "250m"
+            limits:
+              memory: "1Gi"
+              cpu: "500m"
+          env:
+            - name: SPRING_PROFILES_ACTIVE
+              value: "prod"
+            - name: AWS_ACCESS_KEY_ID
+              valueFrom:
+                secretKeyRef:
+                  name: aws-credentials
+                  key: aws_access_key_id
+            - name: AWS_SECRET_ACCESS_KEY
+              valueFrom:
+                secretKeyRef:
+                  name: aws-credentials
+                  key: aws_secret_access_key
+            - name: AWS_REGION
+              value: "us-east-2"
+          livenessProbe:
+            httpGet:
+              path: /actuator/health/liveness
+              port: 8080
+            initialDelaySeconds: 120
+            periodSeconds: 10
+            timeoutSeconds: 5
+            failureThreshold: 5
+          readinessProbe:
+            httpGet:
+              path: /actuator/health/readiness
+              port: 8080
+            initialDelaySeconds: 180
+            periodSeconds: 10
+            timeoutSeconds: 5
+            failureThreshold: 10
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: service-sucursales
+  namespace: arcbank
+spec:
+  type: ClusterIP
+  ports:
+    - port: 80
+      targetPort: 8080
+  selector:
+    app: service-sucursales

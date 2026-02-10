@@ -1,0 +1,83 @@
+﻿# Generado automaticamente - NO EDITAR MANUALMENTE
+# Microservicio: switch-ms-devolucion
+# Namespace: switch
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: switch-ms-devolucion
+  namespace: switch
+  labels:
+    app: switch-ms-devolucion
+    bank: switch
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: switch-ms-devolucion
+  template:
+    metadata:
+      labels:
+        app: switch-ms-devolucion
+        bank: switch
+    spec:
+      containers:
+        - name: switch-ms-devolucion
+          image: 851112555783.dkr.ecr.us-east-2.amazonaws.com/switch-ms-devolucion:c6a9c7a364f6f9146e85cfa7711f82d22e493025
+          ports:
+            - containerPort: 8085
+          resources:
+            requests:
+              memory: "512Mi"
+              cpu: "250m"
+            limits:
+              memory: "1Gi"
+              cpu: "500m"
+          env:
+            - name: SPRING_PROFILES_ACTIVE
+              value: "prod"
+            - name: SPRING_DATASOURCE_URL
+              valueFrom:
+                secretKeyRef:
+                  name: switch-db-credentials
+                  key: devolucion-url
+            - name: SPRING_DATASOURCE_USERNAME
+              valueFrom:
+                secretKeyRef:
+                  name: switch-db-credentials
+                  key: devolucion-username
+            - name: SPRING_DATASOURCE_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: switch-db-credentials
+                  key: devolucion-password
+            - name: SPRING_JPA_HIBERNATE_DDL_AUTO
+              value: "update"
+          livenessProbe:
+            httpGet:
+              path: /actuator/health/liveness
+              port: 8085
+            initialDelaySeconds: 120
+            periodSeconds: 10
+            timeoutSeconds: 5
+            failureThreshold: 5
+          readinessProbe:
+            httpGet:
+              path: /actuator/health/readiness
+              port: 8085
+            initialDelaySeconds: 180
+            periodSeconds: 10
+            timeoutSeconds: 5
+            failureThreshold: 10
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: switch-ms-devolucion
+  namespace: switch
+spec:
+  type: ClusterIP
+  ports:
+    - port: 80
+      targetPort: 8085
+  selector:
+    app: switch-ms-devolucion

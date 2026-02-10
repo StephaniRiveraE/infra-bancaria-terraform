@@ -1,0 +1,67 @@
+﻿# Microservicio: gateway-server (Spring Cloud Gateway)
+# Namespace: arcbank | Puerto: 8080
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: gateway-server
+  namespace: arcbank
+  labels:
+    app: gateway-server
+    bank: arcbank
+spec:
+  replicas: 1
+  strategy:
+    type: Recreate
+  selector:
+    matchLabels:
+      app: gateway-server
+  template:
+    metadata:
+      labels:
+        app: gateway-server
+        bank: arcbank
+    spec:
+      containers:
+        - name: gateway-server
+          image: 851112555783.dkr.ecr.us-east-2.amazonaws.com/arcbank-gateway-server:latest
+          ports:
+            - containerPort: 8080
+          resources:
+            requests:
+              memory: "512Mi"
+              cpu: "250m"
+            limits:
+              memory: "1Gi"
+              cpu: "500m"
+          env:
+            - name: SPRING_PROFILES_ACTIVE
+              value: "prod"
+          livenessProbe:
+            httpGet:
+              path: /actuator/health/liveness
+              port: 8080
+            initialDelaySeconds: 120
+            periodSeconds: 10
+            timeoutSeconds: 5
+            failureThreshold: 5
+          readinessProbe:
+            httpGet:
+              path: /actuator/health/readiness
+              port: 8080
+            initialDelaySeconds: 180
+            periodSeconds: 10
+            timeoutSeconds: 5
+            failureThreshold: 10
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: gateway-server
+  namespace: arcbank
+spec:
+  type: ClusterIP
+  ports:
+    - port: 80
+      targetPort: 8080
+  selector:
+    app: gateway-server
