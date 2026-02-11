@@ -25,10 +25,10 @@ jobs:
       - name: "3. Terraform Init"
         run: terraform init
 
-      - name: "3.5 Cleanup orphan state (one-time fix)"
+      - name: "3.5 Import existing resources (one-time fix)"
         run: |
-          terraform state rm 'module.aws_credits.aws_budgets_budget.credit_budget' || true
-          terraform state rm 'module.aws_credits.aws_instance.credit_instance' || true
+          terraform import 'module.aws_credits.aws_budgets_budget.credit_budget' '851112555783:Monthly-Budget-Credits' || true
+          terraform import 'module.aws_credits.aws_instance.credit_instance' "$(aws ec2 describe-instances --filters 'Name=tag:Name,Values=AWS-Credits-Activity' --query 'Reservations[0].Instances[0].InstanceId' --output text 2>/dev/null)" || true
 
       - name: "4. Terraform Plan"
     
