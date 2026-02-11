@@ -1,0 +1,54 @@
+apiVersion: elbv2.k8s.aws/v1beta1
+kind: TargetGroupBinding
+metadata:
+  name: switch-nucleo-tgb
+  namespace: switch
+spec:
+  serviceRef:
+    name: switch-ms-nucleo
+    port: 8082
+  targetGroupARN: <ARN_TG_NUCLEO>
+---
+apiVersion: elbv2.k8s.aws/v1beta1
+kind: TargetGroupBinding
+metadata:
+  name: switch-compensacion-tgb
+  namespace: switch
+spec:
+  serviceRef:
+    name: switch-ms-compensacion
+    port: 8084
+  targetGroupARN: <ARN_TG_COMPENSACION>
+---
+apiVersion: elbv2.k8s.aws/v1beta1
+kind: TargetGroupBinding
+metadata:
+  name: switch-contabilidad-tgb
+  namespace: switch
+spec:
+  serviceRef:
+    name: switch-ms-contabilidad
+    port: 8080
+  targetGroupARN: <ARN_TG_CONTABILIDAD>
+---
+apiVersion: elbv2.k8s.aws/v1beta1
+kind: TargetGroupBinding
+metadata:
+  name: switch-devolucion-tgb
+  namespace: switch
+spec:
+  serviceRef:
+    name: switch-ms-devolucion
+    port: 8085
+  targetGroupARN: <ARN_TG_DEVOLUCION>
+---
+apiVersion: elbv2.k8s.aws/v1beta1
+kind: TargetGroupBinding
+metadata:
+  name: switch-directorio-tgb
+  namespace: switch
+spec:
+  serviceRef:
+    name: switch-ms-directorio
+    port: 8081
+  targetGroupARN: <ARN_TG_DIRECTORIO>
