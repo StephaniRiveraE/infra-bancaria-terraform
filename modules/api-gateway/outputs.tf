@@ -42,3 +42,13 @@ output "tg_contabilidad_arn" {
   description = "ARN del Target Group de ms-contabilidad (puerto 8083)"
   value       = aws_lb_target_group.tg_contabilidad.arn
 }
+
+output "tg_devolucion_arn" {
+  description = "ARN del Target Group de ms-devolucion (puerto 8085)"
+  value       = aws_lb_target_group.tg_devolucion.arn
+}
+
+output "tg_directorio_arn" {
+  description = "ARN del Target Group de ms-directorio (puerto 8081)"
+  value       = aws_lb_target_group.tg_directorio.arn
+}

@@ -180,3 +180,19 @@ output "api_gateway_id" {
   description = "ID del API Gateway"
   value       = module.api_gateway.apim_gateway_id
 }
+
+output "tg_nucleo_arn" {
+  value = module.api_gateway.tg_nucleo_arn
+}
+output "tg_compensacion_arn" {
+  value = module.api_gateway.tg_compensacion_arn
+}
+output "tg_contabilidad_arn" {
+  value = module.api_gateway.tg_contabilidad_arn
+}
+output "tg_devolucion_arn" {
+  value = module.api_gateway.tg_devolucion_arn
+}
+output "tg_directorio_arn" {
+  value = module.api_gateway.tg_directorio_arn
+}

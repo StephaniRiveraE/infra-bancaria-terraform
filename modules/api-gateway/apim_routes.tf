@@ -61,7 +61,7 @@ resource "aws_lb_target_group" "tg_compensacion" {
 
 resource "aws_lb_target_group" "tg_contabilidad" {
   name        = "apim-tg-contabilidad"
-  port        = 8083
+  port        = 8080
   protocol    = "HTTP"
   vpc_id      = var.vpc_id
   target_type = "ip"
@@ -77,6 +77,48 @@ resource "aws_lb_target_group" "tg_contabilidad" {
   }
 
   tags = merge(var.common_tags, { Name = "tg-ms-contabilidad" })
+}
+
+# Target Group para ms-devolucion (Reversos - pacs.004)
+resource "aws_lb_target_group" "tg_devolucion" {
+  name        = "apim-tg-devolucion"
+  port        = 8085
+  protocol    = "HTTP"
+  vpc_id      = var.vpc_id
+  target_type = "ip"
+
+  health_check {
+    enabled             = true
+    path                = "/actuator/health/liveness"
+    matcher             = "200-299"
+    interval            = 30
+    timeout             = 5
+    healthy_threshold   = 2
+    unhealthy_threshold = 3
+  }
+
+  tags = merge(var.common_tags, { Name = "tg-ms-devolucion" })
+}
+
+# Target Group para ms-directorio (Account Lookup - acmt.023)
+resource "aws_lb_target_group" "tg_directorio" {
+  name        = "apim-tg-directorio"
+  port        = 8081
+  protocol    = "HTTP"
+  vpc_id      = var.vpc_id
+  target_type = "ip"
+
+  health_check {
+    enabled             = true
+    path                = "/actuator/health/liveness"
+    matcher             = "200-299"
+    interval            = 30
+    timeout             = 5
+    healthy_threshold   = 2
+    unhealthy_threshold = 3
+  }
+
+  tags = merge(var.common_tags, { Name = "tg-ms-directorio" })
 }
 
 resource "aws_lb_listener" "apim_backend_listener" {
@@ -118,6 +160,40 @@ resource "aws_lb_listener_rule" "route_funding" {
   condition {
     path_pattern {
       values = ["/api/v2/switch/funding*"]
+    }
+  }
+}
+
+# Regla: /api/v2/switch/returns* -> ms-devolucion
+resource "aws_lb_listener_rule" "route_devolucion" {
+  listener_arn = aws_lb_listener.apim_backend_listener.arn
+  priority     = 300
+
+  action {
+    type             = "forward"
+    target_group_arn = aws_lb_target_group.tg_devolucion.arn
+  }
+
+  condition {
+    path_pattern {
+      values = ["/api/v2/switch/returns*"]
+    }
+  }
+}
+
+# Regla: /api/v2/switch/account-lookup* -> ms-directorio
+resource "aws_lb_listener_rule" "route_directorio" {
+  listener_arn = aws_lb_listener.apim_backend_listener.arn
+  priority     = 400
+
+  action {
+    type             = "forward"
+    target_group_arn = aws_lb_target_group.tg_directorio.arn
+  }
+
+  condition {
+    path_pattern {
+      values = ["/api/v2/switch/account-lookup*"]
     }
   }
 }
