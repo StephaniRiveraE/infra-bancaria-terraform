@@ -28,7 +28,7 @@
 Un ecosistema bancario completo en AWS que permite:
 - **4 Bancos** (ArcBank, Bantec, Nexus, Ecusol) que operan independientemente
 - **1 Switch Central** (DIGICONECU) que procesa transferencias entre bancos
-- **Comunicación segura** via mTLS, OAuth 2.0 y firmas JWS
+- **Comunicación segura** via OAuth 2.0 y firmas JWS
 
 ## Diagrama Conceptual
 
@@ -72,7 +72,7 @@ Un ecosistema bancario completo en AWS que permite:
 | **1** | Red, IAM, Almacenamiento | ✅ 100% | VPC, Subnets, ECR, S3, IAM Roles |
 | **2** | Datos y Mensajería | ✅ 100% | RDS PostgreSQL, DynamoDB, RabbitMQ, ElastiCache |
 | **3** | Cómputo (EKS + Fargate) | ✅ 100% | EKS Cluster, Fargate Profiles, Addons |
-| **4** | Seguridad y API Gateway | ✅ 100% | API Gateway, Cognito, mTLS config |
+| **4** | Seguridad y API Gateway | ✅ 100% | API Gateway, Cognito |
 | **5** | Observabilidad | ✅ 100% | CloudWatch Dashboards, Alarmas, SNS |
 
 ---
@@ -214,7 +214,7 @@ modules/compute/
 modules/api-gateway/
 ├── apim.tf                 # API Gateway HTTP
 ├── apim_routes.tf          # Rutas y autorizadores
-├── apim_mtls.tf            # Configuración mTLS
+
 └── apim_circuit_breaker.tf # Protección
 
 modules/security-certs/
@@ -510,7 +510,7 @@ helm install aws-load-balancer-controller eks/aws-load-balancer-controller \
 
 | Capa | Tecnología | Propósito |
 |------|-----------|-----------|
-| **Transporte** | TLS 1.2 + mTLS (opcional) | Encriptación de datos |
+| **Transporte** | TLS 1.2 | Encriptación de datos |
 | **Identidad** | Cognito + OAuth 2.0 | Autenticación de bancos |
 | **Integridad** | Firma JWS (X-JWS-Signature) | Verificar que el mensaje no fue alterado |
 | **Red** | Security Groups + VPC | Aislamiento de red |
@@ -525,8 +525,7 @@ helm install aws-load-balancer-controller eks/aws-load-balancer-controller \
 
 | Archivo | Propósito |
 |---------|-----------|
-| `client.crt` | Certificado para mTLS |
-| `ca_root.crt` | Cadena de confianza |
+
 | `public_key.pem` | Validación de firmas JWS |
 
 ---
