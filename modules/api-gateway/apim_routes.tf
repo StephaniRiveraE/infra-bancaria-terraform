@@ -20,7 +20,7 @@ resource "aws_lb" "apim_backend_alb" {
 }
 
 resource "aws_lb_target_group" "tg_nucleo" {
-  name        = "${var.environment}-apim-tg-nucleo"
+  name        = "apim-tg-nucleo"
   port        = 8082
   protocol    = "HTTP"
   vpc_id      = var.vpc_id
@@ -44,7 +44,7 @@ resource "aws_lb_target_group" "tg_nucleo" {
 }
 
 resource "aws_lb_target_group" "tg_compensacion" {
-  name        = "${var.environment}-apim-tg-compensacion"
+  name        = "apim-tg-compensacion"
   port        = 8084
   protocol    = "HTTP"
   vpc_id      = var.vpc_id
@@ -68,7 +68,7 @@ resource "aws_lb_target_group" "tg_compensacion" {
 }
 
 resource "aws_lb_target_group" "tg_contabilidad" {
-  name        = "${var.environment}-apim-tg-contabilidad"
+  name        = "apim-tg-contabilidad"
   port        = 8080
   protocol    = "HTTP"
   vpc_id      = var.vpc_id
@@ -93,7 +93,7 @@ resource "aws_lb_target_group" "tg_contabilidad" {
 
 # Target Group para ms-devolucion (Reversos - pacs.004)
 resource "aws_lb_target_group" "tg_devolucion" {
-  name        = "${var.environment}-apim-tg-devolucion"
+  name        = "apim-tg-devolucion"
   port        = 8085
   protocol    = "HTTP"
   vpc_id      = var.vpc_id

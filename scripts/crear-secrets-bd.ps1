@@ -33,22 +33,14 @@ for ($i = 0; $i -lt $entities.Length; $i++) {
         continue
     }
     
-    $dbUsername = $secret.username
-    $dbPassword = $secret.password
-    
     $jdbcUrl = "jdbc:postgresql://$endpoint/$dbName"
     
     # Crear secret en Kubernetes
-    # Creamos el secret con la URL estándar y también con las llaves específicas que esperan algunos microservicios
-    kubectl create secret generic "$($entity)-db-credentials" `
-        --namespace="$entity" `
-        --from-literal=url="$jdbcUrl" `
-        --from-literal=clientes-url="$jdbcUrl" `
-        --from-literal=cuentas-url="$jdbcUrl" `
-        --from-literal=transacciones-url="$jdbcUrl" `
-        --from-literal=sucursales-url="$jdbcUrl" `
-        --from-literal=username="$dbUsername" `
-        --from-literal=password="$dbPassword" `
+    kubectl create secret generic "$entity-db-credentials" `
+        --namespace=$entity `
+        --from-literal=url=$jdbcUrl `
+        --from-literal=username=$($secret.username) `
+        --from-literal=password=$($secret.password) `
         --dry-run=client -o yaml | kubectl apply -f - 2>&1 | Out-Null
     
     Write-Host "[$entity] $entity-db-credentials creado"
