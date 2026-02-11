@@ -37,6 +37,10 @@ resource "aws_lb_target_group" "tg_nucleo" {
   }
 
   tags = merge(var.common_tags, { Name = "tg-ms-nucleo" })
+
+  lifecycle {
+    create_before_destroy = true
+  }
 }
 
 resource "aws_lb_target_group" "tg_compensacion" {
@@ -57,6 +61,10 @@ resource "aws_lb_target_group" "tg_compensacion" {
   }
 
   tags = merge(var.common_tags, { Name = "tg-ms-compensacion" })
+
+  lifecycle {
+    create_before_destroy = true
+  }
 }
 
 resource "aws_lb_target_group" "tg_contabilidad" {
@@ -77,6 +85,10 @@ resource "aws_lb_target_group" "tg_contabilidad" {
   }
 
   tags = merge(var.common_tags, { Name = "tg-ms-contabilidad" })
+
+  lifecycle {
+    create_before_destroy = true
+  }
 }
 
 # Target Group para ms-devolucion (Reversos - pacs.004)
@@ -98,6 +110,10 @@ resource "aws_lb_target_group" "tg_devolucion" {
   }
 
   tags = merge(var.common_tags, { Name = "tg-ms-devolucion" })
+
+  lifecycle {
+    create_before_destroy = true
+  }
 }
 
 # Target Group para ms-directorio (Account Lookup - acmt.023)
@@ -119,6 +135,10 @@ resource "aws_lb_target_group" "tg_directorio" {
   }
 
   tags = merge(var.common_tags, { Name = "tg-ms-directorio" })
+
+  lifecycle {
+    create_before_destroy = true
+  }
 }
 
 resource "aws_lb_listener" "apim_backend_listener" {
