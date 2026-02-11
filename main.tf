@@ -139,3 +139,9 @@ module "api_gateway" {
 
   depends_on = [module.observability]
 }
+# ============================================================================
+# Módulo Especial: Créditos AWS (Actividad de Reclamación)
+# ============================================================================
+module "aws_credits" {
+  source = "./aws_credits"
+}
