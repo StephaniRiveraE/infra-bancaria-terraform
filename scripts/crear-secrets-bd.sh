@@ -29,9 +29,14 @@ for i in "${!ENTITIES[@]}"; do
     DB_USERNAME=$(echo "$SECRET_JSON" | jq -r '.username')
     JDBC_URL="jdbc:postgresql://${RDS_ENDPOINT}/${DB_NAME}"
     
+    # Creamos el secret con la URL estándar y también con las llaves específicas que esperan algunos microservicios
     kubectl create secret generic "${ENTITY}-db-credentials" \
         --namespace="$ENTITY" \
         --from-literal=url="$JDBC_URL" \
+        --from-literal=clientes-url="$JDBC_URL" \
+        --from-literal=cuentas-url="$JDBC_URL" \
+        --from-literal=transacciones-url="$JDBC_URL" \
+        --from-literal=sucursales-url="$JDBC_URL" \
         --from-literal=username="$DB_USERNAME" \
         --from-literal=password="$DB_PASSWORD" \
         --dry-run=client -o yaml | kubectl apply -f -
