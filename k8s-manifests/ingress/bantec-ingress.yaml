@@ -17,10 +17,9 @@ metadata:
 spec:
   ingressClassName: alb
   rules:
-  - host: bantec-api.banca-ecosistema.com
-    http:
+  - http:
       paths:
-      - path: /
+      - path: /bantec
         pathType: Prefix
         backend:
           service:
