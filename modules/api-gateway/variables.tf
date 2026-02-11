@@ -61,23 +61,7 @@ variable "apim_backend_port" {
   default     = 8080
 }
 
-variable "apim_enable_custom_domain" {
-  description = "Habilitar Custom Domain con mTLS"
-  type        = bool
-  default     = false
-}
 
-variable "apim_domain_name" {
-  description = "Dominio personalizado para el API Gateway"
-  type        = string
-  default     = ""
-}
-
-variable "apim_acm_certificate_arn" {
-  description = "ARN del certificado ACM para el dominio personalizado"
-  type        = string
-  default     = ""
-}
 
 variable "apim_log_retention_days" {
   description = "Días de retención para logs de CloudWatch"
