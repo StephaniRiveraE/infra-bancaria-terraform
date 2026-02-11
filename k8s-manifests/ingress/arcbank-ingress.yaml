@@ -25,14 +25,9 @@ metadata:
 spec:
   ingressClassName: alb
   rules:
-  # NOTA: Cambiar este dominio por el tuyo real
-  # Opciones: 
-  #   1. Dominio propio: arcbank-api.tu-dominio.com
-  #   2. Temporal: Usar el DNS que AWS genera automáticamente
-  - host: arcbank-api.banca-ecosistema.com
-    http:
+  - http:
       paths:
-      - path: /
+      - path: /arcbank
         pathType: Prefix
         backend:
           service:
