@@ -1,0 +1,83 @@
+﻿# Generado automaticamente - NO EDITAR MANUALMENTE
+# Microservicio: switch-ms-compensacion
+# Namespace: switch
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: switch-ms-compensacion
+  namespace: switch
+  labels:
+    app: switch-ms-compensacion
+    bank: switch
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: switch-ms-compensacion
+  template:
+    metadata:
+      labels:
+        app: switch-ms-compensacion
+        bank: switch
+    spec:
+      containers:
+        - name: switch-ms-compensacion
+          image: 851112555783.dkr.ecr.us-east-2.amazonaws.com/switch-ms-compensacion:92ab29a9905216ca797e5b4d5763ea94280d4227
+          ports:
+            - containerPort: 8084
+          resources:
+            requests:
+              memory: "512Mi"
+              cpu: "250m"
+            limits:
+              memory: "1Gi"
+              cpu: "500m"
+          env:
+            - name: SPRING_PROFILES_ACTIVE
+              value: "prod"
+            - name: SPRING_DATASOURCE_URL
+              valueFrom:
+                secretKeyRef:
+                  name: switch-db-credentials
+                  key: compensacion-url
+            - name: SPRING_DATASOURCE_USERNAME
+              valueFrom:
+                secretKeyRef:
+                  name: switch-db-credentials
+                  key: compensacion-username
+            - name: SPRING_DATASOURCE_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: switch-db-credentials
+                  key: compensacion-password
+            - name: SPRING_JPA_HIBERNATE_DDL_AUTO
+              value: "update"
+          livenessProbe:
+            httpGet:
+              path: /actuator/health/liveness
+              port: 8084
+            initialDelaySeconds: 120
+            periodSeconds: 10
+            timeoutSeconds: 5
+            failureThreshold: 5
+          readinessProbe:
+            httpGet:
+              path: /actuator/health/readiness
+              port: 8084
+            initialDelaySeconds: 180
+            periodSeconds: 10
+            timeoutSeconds: 5
+            failureThreshold: 10
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: switch-ms-compensacion
+  namespace: switch
+spec:
+  type: ClusterIP
+  ports:
+    - port: 80
+      targetPort: 8084
+  selector:
+    app: switch-ms-compensacion

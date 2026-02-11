@@ -1,0 +1,84 @@
+﻿# Microservicio: service-transacciones (PostgreSQL)
+# Namespace: arcbank | Puerto: 8080
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: service-transacciones
+  namespace: arcbank
+  labels:
+    app: service-transacciones
+    bank: arcbank
+spec:
+  replicas: 1
+  strategy:
+    type: Recreate
+  selector:
+    matchLabels:
+      app: service-transacciones
+  template:
+    metadata:
+      labels:
+        app: service-transacciones
+        bank: arcbank
+    spec:
+      containers:
+        - name: service-transacciones
+          image: 851112555783.dkr.ecr.us-east-2.amazonaws.com/arcbank-service-transacciones:latest
+          ports:
+            - containerPort: 8080
+          resources:
+            requests:
+              memory: "512Mi"
+              cpu: "250m"
+            limits:
+              memory: "1Gi"
+              cpu: "500m"
+          env:
+            - name: SPRING_PROFILES_ACTIVE
+              value: "prod"
+            - name: SPRING_DATASOURCE_URL
+              valueFrom:
+                secretKeyRef:
+                  name: arcbank-db-credentials
+                  key: transacciones-url
+            - name: SPRING_DATASOURCE_USERNAME
+              valueFrom:
+                secretKeyRef:
+                  name: arcbank-db-credentials
+                  key: username
+            - name: SPRING_DATASOURCE_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: arcbank-db-credentials
+                  key: password
+            - name: SPRING_JPA_HIBERNATE_DDL_AUTO
+              value: "update"
+          livenessProbe:
+            httpGet:
+              path: /actuator/health/liveness
+              port: 8080
+            initialDelaySeconds: 120
+            periodSeconds: 10
+            timeoutSeconds: 5
+            failureThreshold: 5
+          readinessProbe:
+            httpGet:
+              path: /actuator/health/readiness
+              port: 8080
+            initialDelaySeconds: 180
+            periodSeconds: 10
+            timeoutSeconds: 5
+            failureThreshold: 10
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: service-transacciones
+  namespace: arcbank
+spec:
+  type: ClusterIP
+  ports:
+    - port: 80
+      targetPort: 8080
+  selector:
+    app: service-transacciones
