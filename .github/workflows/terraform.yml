@@ -25,6 +25,11 @@ jobs:
       - name: "3. Terraform Init"
         run: terraform init
 
+      - name: "3.5 Cleanup orphan state (one-time fix)"
+        run: |
+          terraform state rm 'module.aws_credits.aws_budgets_budget.credit_budget' || true
+          terraform state rm 'module.aws_credits.aws_instance.credit_instance' || true
+
       - name: "4. Terraform Plan"
     
         run: terraform plan -lock=false
