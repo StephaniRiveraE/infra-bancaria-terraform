@@ -1,0 +1,192 @@
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: init-db-arcbank
+  namespace: arcbank
+spec:
+  template:
+    metadata:
+      labels:
+        app: db-init
+    spec:
+      containers:
+      - name: psql-client
+        image: postgres:17
+        command: ["/bin/sh", "-c"]
+        args:
+          - |
+            echo "Esperando conexión a RDS ArcBank..."
+            export PGPASSWORD=$DB_PASSWORD
+            # Conexión al DB principal para crear las lógicas
+            psql -h $DB_HOST -U $DB_USER -d postgres -c "CREATE DATABASE db_clientes;" || echo "db_clientes ya existe"
+            psql -h $DB_HOST -U $DB_USER -d postgres -c "CREATE DATABASE db_cuentas;" || echo "db_cuentas ya existe"
+            psql -h $DB_HOST -U $DB_USER -d postgres -c "CREATE DATABASE db_transacciones;" || echo "db_transacciones ya existe"
+            echo "Init ArcBank completo."
+        env:
+        - name: DB_HOST
+          value: "rds-arcbank-vcreation.cds4g08auukl.us-east-2.rds.amazonaws.com"
+        - name: DB_USER
+          valueFrom:
+            secretKeyRef:
+              name: arcbank-db-credentials
+              key: username
+        - name: DB_PASSWORD
+          valueFrom:
+            secretKeyRef:
+              name: arcbank-db-credentials
+              key: password
+      restartPolicy: Never
+  backoffLimit: 1
+---
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: init-db-bantec
+  namespace: bantec
+spec:
+  template:
+    metadata:
+      labels:
+        app: db-init
+    spec:
+      containers:
+      - name: psql-client
+        image: postgres:17
+        command: ["/bin/sh", "-c"]
+        args:
+          - |
+            export PGPASSWORD=$DB_PASSWORD
+            psql -h $DB_HOST -U $DB_USER -d postgres -c "CREATE DATABASE db_clientes;" || true
+            psql -h $DB_HOST -U $DB_USER -d postgres -c "CREATE DATABASE db_cuentas;" || true
+            psql -h $DB_HOST -U $DB_USER -d postgres -c "CREATE DATABASE db_transacciones;" || true
+            psql -h $DB_HOST -U $DB_USER -d postgres -c "CREATE DATABASE db_sucursales;" || true
+        env:
+        - name: DB_HOST
+          value: "rds-bantec-vcreation.cds4g08auukl.us-east-2.rds.amazonaws.com"
+        - name: DB_USER
+          valueFrom:
+            secretKeyRef:
+              name: bantec-db-credentials
+              key: username
+        - name: DB_PASSWORD
+          valueFrom:
+            secretKeyRef:
+              name: bantec-db-credentials
+              key: password
+      restartPolicy: Never
+  backoffLimit: 1
+---
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: init-db-nexus
+  namespace: nexus
+spec:
+  template:
+    metadata:
+      labels:
+        app: db-init
+    spec:
+      containers:
+      - name: psql-client
+        image: postgres:17
+        command: ["/bin/sh", "-c"]
+        args:
+          - |
+            export PGPASSWORD=$DB_PASSWORD
+            psql -h $DB_HOST -U $DB_USER -d postgres -c "CREATE DATABASE db_clientes;" || true
+            psql -h $DB_HOST -U $DB_USER -d postgres -c "CREATE DATABASE db_cuentas;" || true
+            psql -h $DB_HOST -U $DB_USER -d postgres -c "CREATE DATABASE db_transacciones;" || true
+            psql -h $DB_HOST -U $DB_USER -d postgres -c "CREATE DATABASE db_geografia;" || true
+        env:
+        - name: DB_HOST
+          value: "rds-nexus-vcreation.cds4g08auukl.us-east-2.rds.amazonaws.com"
+        - name: DB_USER
+          valueFrom:
+            secretKeyRef:
+              name: nexus-db-credentials
+              key: username
+        - name: DB_PASSWORD
+          valueFrom:
+            secretKeyRef:
+              name: nexus-db-credentials
+              key: password
+      restartPolicy: Never
+  backoffLimit: 1
+---
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: init-db-ecusol
+  namespace: ecusol
+spec:
+  template:
+    metadata:
+      labels:
+        app: db-init
+    spec:
+      containers:
+      - name: psql-client
+        image: postgres:17
+        command: ["/bin/sh", "-c"]
+        args:
+          - |
+            export PGPASSWORD=$DB_PASSWORD
+            psql -h $DB_HOST -U $DB_USER -d postgres -c "CREATE DATABASE db_clientes;" || true
+            psql -h $DB_HOST -U $DB_USER -d postgres -c "CREATE DATABASE db_cuentas;" || true
+            psql -h $DB_HOST -U $DB_USER -d postgres -c "CREATE DATABASE db_transacciones;" || true
+            psql -h $DB_HOST -U $DB_USER -d postgres -c "CREATE DATABASE db_geografia;" || true
+        env:
+        - name: DB_HOST
+          value: "rds-ecusol-vcreation.cds4g08auukl.us-east-2.rds.amazonaws.com"
+        - name: DB_USER
+          valueFrom:
+            secretKeyRef:
+              name: ecusol-db-credentials
+              key: username
+        - name: DB_PASSWORD
+          valueFrom:
+            secretKeyRef:
+              name: ecusol-db-credentials
+              key: password
+      restartPolicy: Never
+  backoffLimit: 1
+---
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: init-db-switch
+  namespace: switch
+spec:
+  template:
+    metadata:
+      labels:
+        app: db-init
+    spec:
+      containers:
+      - name: psql-client
+        image: postgres:17
+        command: ["/bin/sh", "-c"]
+        args:
+          - |
+            export PGPASSWORD=$DB_PASSWORD
+            psql -h $DB_HOST -U $DB_USER -d postgres -c "CREATE DATABASE db_nucleo;" || true
+            psql -h $DB_HOST -U $DB_USER -d postgres -c "CREATE DATABASE db_contabilidad;" || true
+            psql -h $DB_HOST -U $DB_USER -d postgres -c "CREATE DATABASE db_compensacion;" || true
+            psql -h $DB_HOST -U $DB_USER -d postgres -c "CREATE DATABASE db_devolucion;" || true
+            psql -h $DB_HOST -U $DB_USER -d postgres -c "CREATE DATABASE db_directorio;" || true
+        env:
+        - name: DB_HOST
+          value: "rds-switch-vcreation.cds4g08auukl.us-east-2.rds.amazonaws.com"
+        - name: DB_USER
+          valueFrom:
+            secretKeyRef:
+              name: switch-db-credentials
+              key: username
+        - name: DB_PASSWORD
+          valueFrom:
+            secretKeyRef:
+              name: switch-db-credentials
+              key: password
+      restartPolicy: Never
+  backoffLimit: 1
