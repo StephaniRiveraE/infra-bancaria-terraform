@@ -1,0 +1,43 @@
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: cleanup-arcbank-old-tables
+  namespace: arcbank
+spec:
+  template:
+    metadata:
+      labels:
+        app: db-cleanup
+    spec:
+      containers:
+      - name: psql-client
+        image: postgres:17
+        command: ["/bin/sh", "-c"]
+        args:
+          - |
+            echo "Iniciando limpieza de tablas antiguas en db_arcbank_core..."
+            export PGPASSWORD=$DB_PASSWORD
+            psql -h $DB_HOST -U $DB_USER -d db_arcbank_core -c "DROP TABLE IF EXISTS transaccion CASCADE;"
+            psql -h $DB_HOST -U $DB_USER -d db_arcbank_core -c "DROP TABLE IF EXISTS cuenta_ahorro CASCADE;"
+            psql -h $DB_HOST -U $DB_USER -d db_arcbank_core -c "DROP TABLE IF EXISTS cliente CASCADE;"
+            psql -h $DB_HOST -U $DB_USER -d db_arcbank_core -c "DROP TABLE IF EXISTS persona CASCADE;"
+            psql -h $DB_HOST -U $DB_USER -d db_arcbank_core -c "DROP TABLE IF EXISTS empresa CASCADE;"
+            psql -h $DB_HOST -U $DB_USER -d db_arcbank_core -c "DROP TABLE IF EXISTS empresa_representante CASCADE;"
+            psql -h $DB_HOST -U $DB_USER -d db_arcbank_core -c "DROP TABLE IF EXISTS tasa_interes_historial CASCADE;"
+            psql -h $DB_HOST -U $DB_USER -d db_arcbank_core -c "DROP TABLE IF EXISTS tipo_cuenta_ahorro CASCADE;"
+            echo "Limpieza completada exitosamente."
+        env:
+        - name: DB_HOST
+          value: "rds-arcbank-vcreation.cds4g08auukl.us-east-2.rds.amazonaws.com"
+        - name: DB_USER
+          valueFrom:
+            secretKeyRef:
+              name: arcbank-db-credentials
+              key: username
+        - name: DB_PASSWORD
+          valueFrom:
+            secretKeyRef:
+              name: arcbank-db-credentials
+              key: password
+      restartPolicy: Never
+  backoffLimit: 1
