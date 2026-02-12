@@ -51,6 +51,20 @@ spec:
                 secretKeyRef:
                   name: arcbank-db-credentials
                   key: password
+            - name: APIM_URL
+              value: "http://switch-ms-nucleo.switch.svc.cluster.local:8080/api/v2"
+            - name: APIM_ENDPOINT # For backward compatibility with some code versions
+              value: "http://switch-ms-nucleo.switch.svc.cluster.local:8080/api/v2"
+            - name: COGNITO_CLIENT_ID
+              valueFrom:
+                secretKeyRef:
+                  name: arcbank-cognito-credentials
+                  key: client-id
+            - name: COGNITO_CLIENT_SECRET
+              valueFrom:
+                secretKeyRef:
+                  name: arcbank-cognito-credentials
+                  key: client-secret
             - name: SPRING_JPA_HIBERNATE_DDL_AUTO
               value: "update"
           livenessProbe:
