@@ -216,7 +216,7 @@ resource "aws_apigatewayv2_integration" "integration_compensacion" {
   connection_id          = aws_apigatewayv2_vpc_link.apim_vpc_link.id
   integration_type       = "HTTP_PROXY"
   integration_uri        = aws_lb_listener.apim_backend_listener.arn
-  integration_method     = "POST"
+  integration_method     = "ANY"
   payload_format_version = "1.0"
   timeout_milliseconds   = 29000
 
