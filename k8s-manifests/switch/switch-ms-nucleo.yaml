@@ -30,6 +30,8 @@ spec:
               memory: "1Gi"
               cpu: "500m"
           env:
+            - name: JAVA_TOOL_OPTIONS
+              value: "-Djava.net.preferIPv4Stack=true"
             - name: SPRING_PROFILES_ACTIVE
               value: "prod"
             - name: SPRING_DATASOURCE_URL
