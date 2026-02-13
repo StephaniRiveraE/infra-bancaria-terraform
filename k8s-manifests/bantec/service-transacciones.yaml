@@ -58,6 +58,13 @@ spec:
                 secretKeyRef:
                   name: bantec-cognito-credentials
                   key: client-secret
+            - name: APIM_SECURITY_ENABLED
+              value: "true"
+            - name: APIM_ORIGIN_SECRET
+              valueFrom:
+                secretKeyRef:
+                  name: apim-internal-secret
+                  key: APIM_ORIGIN_SECRET
           livenessProbe:
             httpGet:
               path: /actuator/health/liveness
