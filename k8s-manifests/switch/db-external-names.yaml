@@ -1,0 +1,35 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: nucleo-db
+  namespace: switch
+spec:
+  type: ExternalName
+  externalName: rds-switch-vcreation.cds4g08auukl.us-east-2.rds.amazonaws.com
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: compensacion-db
+  namespace: switch
+spec:
+  type: ExternalName
+  externalName: rds-switch-vcreation.cds4g08auukl.us-east-2.rds.amazonaws.com
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: devolucion-db
+  namespace: switch
+spec:
+  type: ExternalName
+  externalName: rds-switch-vcreation.cds4g08auukl.us-east-2.rds.amazonaws.com
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: contabilidad-db
+  namespace: switch
+spec:
+  type: ExternalName
+  externalName: rds-switch-vcreation.cds4g08auukl.us-east-2.rds.amazonaws.com

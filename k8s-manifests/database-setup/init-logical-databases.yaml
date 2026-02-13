@@ -170,11 +170,10 @@ spec:
         args:
           - |
             export PGPASSWORD=$DB_PASSWORD
-            psql -h $DB_HOST -U $DB_USER -d postgres -c "CREATE DATABASE db_nucleo;" || true
-            psql -h $DB_HOST -U $DB_USER -d postgres -c "CREATE DATABASE db_contabilidad;" || true
-            psql -h $DB_HOST -U $DB_USER -d postgres -c "CREATE DATABASE db_compensacion;" || true
-            psql -h $DB_HOST -U $DB_USER -d postgres -c "CREATE DATABASE db_devolucion;" || true
-            psql -h $DB_HOST -U $DB_USER -d postgres -c "CREATE DATABASE db_directorio;" || true
+            psql -h $DB_HOST -U $DB_USER -d postgres -c "CREATE DATABASE nucleo_db;" || true
+            psql -h $DB_HOST -U $DB_USER -d postgres -c "CREATE DATABASE contabilidad_db;" || true
+            psql -h $DB_HOST -U $DB_USER -d postgres -c "CREATE DATABASE compensacion_db;" || true
+            psql -h $DB_HOST -U $DB_USER -d postgres -c "CREATE DATABASE devolucion;" || true
         env:
         - name: DB_HOST
           value: "rds-switch-vcreation.cds4g08auukl.us-east-2.rds.amazonaws.com"
