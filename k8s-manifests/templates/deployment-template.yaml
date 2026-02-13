@@ -1,5 +1,3 @@
-# Template Deployment para Microservicios
-# Variables: ${SERVICE_NAME}, ${NAMESPACE}, ${AWS_ACCOUNT_ID}, ${AWS_REGION}, ${ECR_REPO_NAME}, ${IMAGE_TAG}
 apiVersion: apps/v1
 kind: Deployment
 metadata:
@@ -34,7 +32,6 @@ spec:
           env:
             - name: SPRING_PROFILES_ACTIVE
               value: "prod"
-            # Variables de Base de Datos (desde secrets)
             - name: SPRING_DATASOURCE_URL
               valueFrom:
                 secretKeyRef:
@@ -50,7 +47,6 @@ spec:
                 secretKeyRef:
                   name: ${NAMESPACE}-db-credentials
                   key: password
-            # Variables de RabbitMQ (desde secrets)
             - name: RABBITMQ_HOST
               valueFrom:
                 secretKeyRef:

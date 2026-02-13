@@ -1,7 +1,3 @@
-# ============================================================================
-# WORKFLOW AUTOMATICO DE DEPLOY A EKS
-# Este workflow CREA el deployment si no existe, o lo ACTUALIZA si ya existe
-# ============================================================================
 name: "Deploy to EKS (Auto)"
 
 on:
@@ -12,19 +8,16 @@ env:
   AWS_REGION: us-east-2
   EKS_CLUSTER: eks-banca-ecosistema
   
-  # ⚠️ CAMBIAR ESTOS VALORES SEGÚN TU MICROSERVICIO ⚠️
-  NAMESPACE: switch                           # Tu namespace (arcbank, bantec, nexus, ecusol, switch)
-  ECR_REPO: switch-ms-directorio              # Nombre del repo ECR
-  SERVICE_NAME: switch-ms-directorio          # Nombre del servicio
+  NAMESPACE: switch                           
+  ECR_REPO: switch-ms-directorio              
+  SERVICE_NAME: switch-ms-directorio          
   
-  # Configuración del contenedor
-  CONTAINER_PORT: "8081"                      # Puerto donde corre tu app
+  CONTAINER_PORT: "8081"                      
   
-  # Configuración de Secretos (Solo cambiar si usas llaves especificas)
-  SECRET_NAME: "switch-db-credentials"        # Nombre del secreto en K8s
-  SECRET_KEY_URL: "mongodb-uri"               # Llave dentro del secreto para URL (ej: url, nucleo-url, mongodb-uri)
-  SECRET_KEY_USER: "username"                 # Llave para usuario (o dejar vacio si no aplica)
-  SECRET_KEY_PASS: "password"                 # Llave para password (o dejar vacio si no aplica)
+  SECRET_NAME: "switch-db-credentials"        
+  SECRET_KEY_URL: "mongodb-uri"               
+  SECRET_KEY_USER: "username"                 
+  SECRET_KEY_PASS: "password"                 
 
 jobs:
   build-and-deploy:

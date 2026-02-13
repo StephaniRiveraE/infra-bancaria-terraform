@@ -1,18 +1,9 @@
-# ============================================================================
-# AMAZON MQ - RABBITMQ BROKER
-# Servidor de colas para comunicación entre bancos (versión académica ~$25/mes)
-# ============================================================================
-
-# Generar contraseña segura para el admin de RabbitMQ
 resource "random_password" "rabbitmq_password" {
   length           = 16
   special          = true
   override_special = "!#$%&*+-=?^_"
 }
 
-# Broker de Amazon MQ (RabbitMQ) - PÚBLICO
-# NOTA: Brokers públicos NO permiten security groups ni subnets
-# AWS maneja la seguridad automáticamente mediante TLS
 resource "aws_mq_broker" "rabbitmq" {
   broker_name = "switch-rabbitmq"
 
@@ -23,20 +14,16 @@ resource "aws_mq_broker" "rabbitmq" {
   publicly_accessible        = true
   auto_minor_version_upgrade = true
 
-  # Usuario administrador
   user {
     username = "mqadmin"
     password = random_password.rabbitmq_password.result
   }
-
-  # Mantenimiento automático (domingos 3-4 AM)
   maintenance_window_start_time {
     day_of_week = "SUNDAY"
     time_of_day = "03:00"
     time_zone   = "America/Guayaquil"
   }
 
-  # Logs
   logs {
     general = true
   }
@@ -48,7 +35,6 @@ resource "aws_mq_broker" "rabbitmq" {
   })
 }
 
-# Guardar credenciales en Secrets Manager
 resource "aws_secretsmanager_secret" "rabbitmq_credentials" {
   name        = "rabbitmq-credentials"
   description = "Credenciales de acceso al broker RabbitMQ para el Switch"

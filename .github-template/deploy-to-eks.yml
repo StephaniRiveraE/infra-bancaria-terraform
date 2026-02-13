@@ -1,7 +1,3 @@
-# ============================================================================
-# WORKFLOW DE DESPLIEGUE A AWS EKS
-# Copia este archivo a: .github/workflows/deploy.yml en tu repositorio
-# ============================================================================
 
 name: "Deploy to EKS"
 
@@ -13,11 +9,9 @@ env:
   AWS_REGION: us-east-2
   EKS_CLUSTER: eks-banca-ecosistema
   
-  # ⚠️ CAMBIAR ESTOS 3 VALORES SEGÚN TU BANCO Y SERVICIO ⚠️
-  # Ver tabla de valores en GUIA_DESARROLLADORES.md
-  NAMESPACE: arcbank                        # Tu banco
-  ECR_REPO: arcbank-ms-clientes             # Formato: {banco}-{servicio}
-  SERVICE_NAME: ms-clientes                 # Nombre de tu microservicio
+  NAMESPACE: arcbank
+  ECR_REPO: arcbank-ms-clientes
+  SERVICE_NAME: ms-clientes
 
 jobs:
   build-and-deploy:

@@ -8,8 +8,7 @@ resource "random_password" "db_passwords" {
 resource "aws_db_instance" "rds_instances" {
   for_each = var.entidades
 
-  identifier        = "rds-${each.key}-vcreation" # Usamos un nombre nuevo para asegurar limpieza total
-  allocated_storage = var.rds_storage_gb
+  identifier        = "rds-${each.key}-vcreation" 
   db_name           = each.value
   engine            = "postgres"
   engine_version    = var.rds_engine_version
@@ -29,11 +28,6 @@ resource "aws_db_instance" "rds_instances" {
     Name   = "rds-${each.key}"
     Entity = title(each.key)
   })
-
-  # Se recomienda activar esto después de que el estado sea 'available'
-  # lifecycle {
-  #   ignore_changes = all
-  # }
 }
 
 resource "aws_secretsmanager_secret" "db_secrets" {

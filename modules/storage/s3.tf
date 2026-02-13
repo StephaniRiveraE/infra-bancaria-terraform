@@ -10,7 +10,7 @@ locals {
 
 resource "aws_s3_bucket" "frontends" {
   for_each = toset(local.frontends)
-  bucket   = "banca-ecosistema-${each.value}-512be32e" # Sufijo único de tu Fase 1
+  bucket   = "banca-ecosistema-${each.value}-512be32e" 
 
   tags = merge(var.common_tags, {
     Domain = split("-", each.value)[0]

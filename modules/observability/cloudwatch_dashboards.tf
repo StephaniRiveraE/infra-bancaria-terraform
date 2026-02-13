@@ -1,24 +1,15 @@
-# ============================================================================
-# CLOUDWATCH DASHBOARDS - Visibilidad del ecosistema bancario
-# ============================================================================
 
-# Locals para asegurar que todas las variables son strings
 locals {
   api_gateway_id_str      = tostring(var.api_gateway_id != "" ? var.api_gateway_id : "placeholder-api-id")
   rabbitmq_broker_name_str = tostring(var.rabbitmq_broker_name)
   rds_instance_ids_str    = [for id in var.rds_instance_ids : tostring(id)]
 }
 
-# ============================================================================
-# DASHBOARD PRINCIPAL - Overview del Ecosistema
-# ============================================================================
-
 resource "aws_cloudwatch_dashboard" "overview" {
   dashboard_name = "Banca-Overview-${var.environment}"
 
   dashboard_body = jsonencode({
     widgets = [
-      # Título
       {
         type   = "text"
         x      = 0
@@ -29,7 +20,6 @@ resource "aws_cloudwatch_dashboard" "overview" {
           markdown = "# 🏦 Ecosistema Bancario - Dashboard Principal"
         }
       },
-      # API Gateway Requests
       {
         type   = "metric"
         x      = 0
@@ -48,7 +38,6 @@ resource "aws_cloudwatch_dashboard" "overview" {
           ]
         }
       },
-      # API Gateway Latency
       {
         type   = "metric"
         x      = 8
@@ -67,7 +56,6 @@ resource "aws_cloudwatch_dashboard" "overview" {
           ]
         }
       },
-      # API Gateway Errors
       {
         type   = "metric"
         x      = 16
@@ -87,7 +75,6 @@ resource "aws_cloudwatch_dashboard" "overview" {
           ]
         }
       },
-      # RDS CPU - Todos los bancos
       {
         type   = "metric"
         x      = 0
@@ -106,7 +93,6 @@ resource "aws_cloudwatch_dashboard" "overview" {
           ]
         }
       },
-      # RDS Connections
       {
         type   = "metric"
         x      = 12
@@ -125,7 +111,6 @@ resource "aws_cloudwatch_dashboard" "overview" {
           ]
         }
       },
-      # RabbitMQ Messages
       {
         type   = "metric"
         x      = 0
@@ -144,7 +129,6 @@ resource "aws_cloudwatch_dashboard" "overview" {
           ]
         }
       },
-      # Alarmas Activas
       {
         type   = "alarm"
         x      = 12
@@ -162,12 +146,7 @@ resource "aws_cloudwatch_dashboard" "overview" {
   })
 }
 
-# Data source para obtener Account ID
 data "aws_caller_identity" "current" {}
-
-# ============================================================================
-# DASHBOARD POR BANCO - ArcBank
-# ============================================================================
 
 resource "aws_cloudwatch_dashboard" "arcbank" {
   dashboard_name = "ArcBank-Metrics-${var.environment}"
@@ -231,10 +210,6 @@ resource "aws_cloudwatch_dashboard" "arcbank" {
     ]
   })
 }
-
-# ============================================================================
-# DASHBOARD DEL SWITCH
-# ============================================================================
 
 resource "aws_cloudwatch_dashboard" "switch" {
   dashboard_name = "Switch-Metrics-${var.environment}"

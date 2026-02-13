@@ -1,7 +1,3 @@
-# ============================================================================
-# VARIABLES - Módulo Compute (EKS + Fargate)
-# ============================================================================
-
 variable "vpc_id" {
   description = "ID de la VPC principal"
   type        = string
