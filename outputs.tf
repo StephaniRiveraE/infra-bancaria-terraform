@@ -1,9 +1,4 @@
-# ============================================================================
-# OUTPUTS GLOBALES
-# Infraestructura Bancaria - Outputs de todos los módulos
-# ============================================================================
 
-# Outputs de Networking
 output "vpc_id" {
   description = "ID de la VPC principal"
   value       = module.networking.vpc_id
@@ -14,7 +9,6 @@ output "private_subnet_ids" {
   value       = [module.networking.private_subnet_az1_id, module.networking.private_subnet_az2_id]
 }
 
-# Outputs de IAM
 output "eks_cluster_role_arn" {
   description = "ARN del rol del clúster EKS"
   value       = module.iam.eks_cluster_role_arn
@@ -25,13 +19,11 @@ output "fargate_execution_role_arn" {
   value       = module.iam.fargate_execution_role_arn
 }
 
-# Outputs de Storage
 output "ecr_repository_urls" {
   description = "URLs de los repositorios ECR"
   value       = module.storage.ecr_repository_urls
 }
 
-# Outputs de Databases
 output "rds_endpoints" {
   description = "Endpoints de las instancias RDS"
   value       = module.databases.rds_endpoints
@@ -49,7 +41,6 @@ output "dynamodb_table_names" {
   value       = module.databases.dynamodb_table_names
 }
 
-# Outputs de Messaging (Amazon MQ - RabbitMQ)
 output "rabbitmq_console_url" {
   description = "URL de la consola web de RabbitMQ (para administrar colas)"
   value       = module.messaging.rabbitmq_console_url
@@ -70,11 +61,6 @@ output "rabbitmq_credentials_secret_arn" {
   value       = module.messaging.rabbitmq_credentials_secret_arn
   sensitive   = true
 }
-
-# ============================================================================
-# Outputs de Compute (EKS + Fargate) - FASE 3
-# NOTA: Retornan null cuando eks_enabled = false
-# ============================================================================
 
 output "eks_enabled" {
   description = "Indica si el stack de EKS está habilitado (para ahorrar costos se puede poner en false)"
@@ -117,10 +103,6 @@ output "eks_kubectl_command" {
   value       = module.compute.kubectl_config_command
 }
 
-# ============================================================================
-# Outputs de ElastiCache (Redis) - FASE 2
-# ============================================================================
-
 output "elasticache_enabled" {
   description = "Indica si ElastiCache Redis está habilitado (ahorro ~$50/mes cuando está apagado)"
   value       = module.databases.elasticache_enabled
@@ -130,10 +112,6 @@ output "redis_endpoint" {
   description = "Endpoint del cluster Redis del Switch (vacío si elasticache_enabled = false)"
   value       = module.databases.redis_endpoint
 }
-
-# ============================================================================
-# Outputs de Observabilidad - FASE 5
-# ============================================================================
 
 output "sns_alarms_topic_arn" {
   description = "ARN del topic SNS para alarmas"
@@ -149,11 +127,6 @@ output "alarm_count" {
   description = "Número de alarmas CloudWatch creadas"
   value       = module.observability.alarm_count
 }
-
-# ============================================================================
-# Outputs de API Gateway y Seguridad - FASE 4
-# Estos son los datos que debes entregarle a los bancos (ArcBank, Nexus, etc.)
-# ============================================================================
 
 output "switch_api_url" {
   description = "URL principal del Switch para transacciones"

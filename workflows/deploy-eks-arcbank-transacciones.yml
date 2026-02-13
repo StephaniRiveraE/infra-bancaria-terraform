@@ -1,8 +1,3 @@
-# ============================================================================
-# WORKFLOW DE DEPLOY - arcbank-service-transacciones (PostgreSQL)
-# Copia este archivo a: .github/workflows/deploy-eks-transacciones.yml
-# en el repositorio de arcbank-service-transacciones
-# ============================================================================
 name: "Deploy arcbank-service-transacciones to EKS"
 
 on:

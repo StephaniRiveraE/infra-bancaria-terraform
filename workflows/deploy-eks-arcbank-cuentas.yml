@@ -1,8 +1,3 @@
-# ============================================================================
-# WORKFLOW DE DEPLOY - arcbank-service-cuentas (PostgreSQL)
-# Copia este archivo a: .github/workflows/deploy-eks-cuentas.yml
-# en el repositorio de arcbank-service-cuentas
-# ============================================================================
 name: "Deploy arcbank-service-cuentas to EKS"
 
 on:

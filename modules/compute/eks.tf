@@ -1,8 +1,3 @@
-# ============================================================================
-# EKS CLUSTER - Clúster de Kubernetes para Ecosistema Bancario
-# Fase 3: Cómputo Serverless
-# CONDICIONAL: Solo se crea si eks_enabled = true
-# ============================================================================
 
 resource "aws_eks_cluster" "bancario" {
   count    = var.eks_enabled ? 1 : 0
@@ -19,13 +14,11 @@ resource "aws_eks_cluster" "bancario" {
     security_group_ids = [aws_security_group.eks_cluster_sg[0].id]
   }
 
-  # MODERNIZACIÓN: Habilitar modo mixto (API + ConfigMap) para evitar editar el configmap manualmente
   access_config {
     authentication_mode                         = "API_AND_CONFIG_MAP"
     bootstrap_cluster_creator_admin_permissions = true
   }
 
-  # OPTIMIZACIÓN: Solo logs esenciales para reducir costos
   enabled_cluster_log_types = ["api", "audit"]
 
   tags = merge(var.common_tags, {
@@ -41,7 +34,7 @@ resource "aws_eks_cluster" "bancario" {
 resource "aws_cloudwatch_log_group" "eks_cluster" {
   count             = var.eks_enabled ? 1 : 0
   name              = "/aws/eks/eks-banca-ecosistema/cluster"
-  retention_in_days = var.eks_log_retention_days # OPTIMIZACIÓN: Retención reducida
+  retention_in_days = var.eks_log_retention_days
 
   tags = merge(var.common_tags, {
     Name = "eks-cluster-logs"
@@ -76,10 +69,6 @@ resource "aws_security_group_rule" "cluster_ingress_pods" {
   security_group_id = aws_security_group.eks_cluster_sg[0].id
   description       = "Allow pods to communicate with cluster API"
 }
-
-# ============================================================================
-# ACCESO CI/CD - Mapeo de Usuario IAM a Kubernetes Access Entry
-# ============================================================================
 
 resource "aws_eks_access_entry" "cicd_user" {
   count = var.eks_enabled && var.cicd_user_arn != "" ? 1 : 0

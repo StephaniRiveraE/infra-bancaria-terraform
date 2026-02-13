@@ -1,7 +1,3 @@
-# ============================================================================
-# VARIABLES PRINCIPALES - Infraestructura Bancaria
-# ============================================================================
-
 variable "aws_region" {
   description = "Región de AWS donde se despliega la infraestructura"
   type        = string
@@ -19,10 +15,6 @@ variable "environment" {
   type        = string
   default     = "dev"
 }
-
-# ============================================================================
-# ENTIDADES DEL ECOSISTEMA
-# ============================================================================
 
 variable "entidades" {
   description = "Lista de entidades bancarias del ecosistema"
@@ -42,10 +34,6 @@ variable "bancos" {
   default     = ["arcbank", "bantec", "nexus", "ecusol"]
 }
 
-# ============================================================================
-# NETWORKING
-# ============================================================================
-
 variable "vpc_cidr" {
   description = "CIDR block para la VPC principal"
   type        = string
@@ -57,10 +45,6 @@ variable "availability_zones" {
   type        = list(string)
   default     = ["us-east-2a", "us-east-2b"]
 }
-
-# ============================================================================
-# RDS (BASES DE DATOS)
-# ============================================================================
 
 variable "rds_instance_class" {
   description = "Tipo de instancia para RDS"
@@ -86,10 +70,6 @@ variable "rds_username" {
   default     = "dbadmin"
 }
 
-# ============================================================================
-# TAGS COMUNES
-# ============================================================================
-
 variable "common_tags" {
   description = "Tags que se aplican a todos los recursos"
   type        = map(string)
@@ -99,10 +79,6 @@ variable "common_tags" {
     Environment = "dev"
   }
 }
-
-# ============================================================================
-# EKS COST CONTROL
-# ============================================================================
 
 variable "eks_enabled" {
   description = "Habilitar/deshabilitar el stack de EKS (cluster, NAT, Fargate). Poner en false para ahorrar costos cuando no se necesite."
@@ -122,19 +98,11 @@ variable "enable_eks_container_insights" {
   default     = false
 }
 
-# ============================================================================
-# ELASTICACHE COST CONTROL
-# ============================================================================
-
 variable "elasticache_enabled" {
   description = "Habilitar/deshabilitar ElastiCache Redis (ahorro ~$50/mes cuando está apagado)"
   type        = bool
   default     = false
 }
-
-# ============================================================================
-# OBSERVABILITY
-# ============================================================================
 
 variable "alarm_email" {
   description = "Email para recibir notificaciones de alarmas CloudWatch"

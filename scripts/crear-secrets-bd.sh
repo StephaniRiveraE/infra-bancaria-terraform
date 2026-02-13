@@ -1,5 +1,4 @@
-﻿#!/bin/bash
-set -e
+﻿set -e
 
 echo "ðŸ” Creando secrets de BD en Kubernetes..."
 

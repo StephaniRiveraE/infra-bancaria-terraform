@@ -1,7 +1,4 @@
-﻿# Generado automaticamente - NO EDITAR MANUALMENTE
-# Microservicio: ecusol-ms-clientes
-# Namespace: ecusol
-apiVersion: apps/v1
+﻿apiVersion: apps/v1
 kind: Deployment
 metadata:
   name: ecusol-ms-clientes

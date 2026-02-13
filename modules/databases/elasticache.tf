@@ -1,10 +1,4 @@
-# ============================================================================
-# ELASTICACHE (REDIS) - Cache para el Switch Transaccional
-# CONDICIONAL: Solo se crea si elasticache_enabled = true
-# Costo: ~$15/mes (1 solo cluster para el Switch)
-# ============================================================================
 
-# Subnet Group para ElastiCache (usa las mismas subnets privadas que RDS)
 resource "aws_elasticache_subnet_group" "redis" {
   count       = var.elasticache_enabled ? 1 : 0
   name        = "redis-subnet-group"
@@ -16,7 +10,6 @@ resource "aws_elasticache_subnet_group" "redis" {
   })
 }
 
-# Security Group para Redis
 resource "aws_security_group" "redis_sg" {
   count       = var.elasticache_enabled ? 1 : 0
   name        = "redis-sg"
@@ -43,11 +36,7 @@ resource "aws_security_group" "redis_sg" {
   })
 }
 
-# ============================================================================
-# ÚNICO CLUSTER REDIS - Solo para el Switch
-# El Switch es el que procesa las transacciones interbancarias
-# Cache de: transacciones recientes, tokens, sesiones del Switch
-# ============================================================================
+
 
 resource "aws_elasticache_cluster" "switch_redis" {
   count = var.elasticache_enabled ? 1 : 0
@@ -63,8 +52,7 @@ resource "aws_elasticache_cluster" "switch_redis" {
   subnet_group_name  = aws_elasticache_subnet_group.redis[0].name
   security_group_ids = [aws_security_group.redis_sg[0].id]
 
-  # Optimización de costos
-  snapshot_retention_limit = 0 # Sin backups automáticos
+  snapshot_retention_limit = 0 
 
   tags = merge(var.common_tags, {
     Name   = "switch-redis-cache"

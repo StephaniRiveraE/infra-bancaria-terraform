@@ -1,11 +1,4 @@
-# ============================================================================
-# USUARIO IAM PARA CI/CD - Permisos para desarrolladores
-# Este usuario es para que los workflows de GitHub Actions puedan:
-# 1. Push imágenes a ECR
-# 2. Deploy a EKS
-# ============================================================================
 
-# Política para ECR (push de imágenes)
 resource "aws_iam_policy" "cicd_ecr" {
   name        = "CICD-ECR-Push"
   description = "Permite push de imágenes Docker a ECR"
@@ -41,7 +34,6 @@ resource "aws_iam_policy" "cicd_ecr" {
   tags = var.common_tags
 }
 
-# Política para EKS (deploy)
 resource "aws_iam_policy" "cicd_eks" {
   name        = "CICD-EKS-Deploy"
   description = "Permite deploy a EKS"
@@ -64,7 +56,6 @@ resource "aws_iam_policy" "cicd_eks" {
   tags = var.common_tags
 }
 
-# Política para S3 (deploy de frontends)
 resource "aws_iam_policy" "cicd_s3" {
   name        = "CICD-S3-Deploy"
   description = "Permite deploy de frontends a S3"
@@ -92,7 +83,6 @@ resource "aws_iam_policy" "cicd_s3" {
   tags = var.common_tags
 }
 
-# Usuario IAM para CI/CD
 resource "aws_iam_user" "cicd_deployer" {
   name = "github-actions-deployer"
   path = "/cicd/"
@@ -103,7 +93,6 @@ resource "aws_iam_user" "cicd_deployer" {
   })
 }
 
-# Adjuntar políticas al usuario
 resource "aws_iam_user_policy_attachment" "cicd_ecr" {
   user       = aws_iam_user.cicd_deployer.name
   policy_arn = aws_iam_policy.cicd_ecr.arn
@@ -119,12 +108,9 @@ resource "aws_iam_user_policy_attachment" "cicd_s3" {
   policy_arn = aws_iam_policy.cicd_s3.arn
 }
 
-# Access Keys para GitHub Actions
 resource "aws_iam_access_key" "cicd_deployer" {
   user = aws_iam_user.cicd_deployer.name
 }
-
-# Guardar credenciales en Secrets Manager
 resource "aws_secretsmanager_secret" "cicd_credentials" {
   name        = "github-actions-deployer-credentials"
   description = "Credenciales IAM para CI/CD de microservicios"
@@ -144,7 +130,6 @@ resource "aws_secretsmanager_secret_version" "cicd_credentials" {
   })
 }
 
-# Output para ver las credenciales
 output "cicd_credentials_secret_arn" {
   description = "ARN del secreto con credenciales de CI/CD"
   value       = aws_secretsmanager_secret.cicd_credentials.arn

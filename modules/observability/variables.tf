@@ -1,7 +1,3 @@
-# ============================================================================
-# MÓDULO OBSERVABILIDAD - Variables de entrada
-# Fase 5: Dashboards, Alarmas, SNS
-# ============================================================================
 
 variable "common_tags" {
   description = "Tags comunes para todos los recursos"
@@ -26,14 +22,13 @@ variable "enable_alarms" {
   default     = true
 }
 
-# Variables para métricas de RDS
 variable "rds_instance_ids" {
   description = "Lista de identificadores de instancias RDS para monitorear"
   type        = list(string)
   default     = ["rds-arcbank", "rds-bantec", "rds-nexus", "rds-ecusol", "rds-switch"]
 }
 
-# Variables para métricas de API Gateway
+
 variable "api_gateway_id" {
   description = "ID del API Gateway para métricas"
   type        = string
@@ -46,14 +41,14 @@ variable "api_gateway_stage" {
   default     = "dev"
 }
 
-# Variables para métricas de RabbitMQ
+
 variable "rabbitmq_broker_name" {
   description = "Nombre del broker RabbitMQ"
   type        = string
   default     = "switch-rabbitmq"
 }
 
-# Umbrales de alarmas
+
 variable "rds_cpu_threshold" {
   description = "Umbral de CPU para alarmas de RDS (%)"
   type        = number
@@ -66,7 +61,7 @@ variable "api_5xx_threshold" {
   default     = 10
 }
 
-# Variables para EKS (Container Insights)
+
 variable "eks_enabled" {
   description = "Indica si EKS está habilitado"
   type        = bool

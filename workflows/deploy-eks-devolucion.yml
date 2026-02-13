@@ -1,8 +1,4 @@
-# ============================================================================
-# WORKFLOW DE DEPLOY - switch-ms-devolucion
-# Copia este archivo a: .github/workflows/deploy-eks-devolucion.yml
-# en el repositorio de switch-ms-devolucion
-# ============================================================================
+
 name: "Deploy switch-ms-devolucion to EKS"
 
 on:

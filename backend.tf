@@ -8,5 +8,3 @@ terraform {
   }
 }
 
-# NOTA: El bucket S3 y tabla DynamoDB ya existen en AWS
-# No se gestionan aquí para evitar conflictos, solo se referencian en el backend config arriba

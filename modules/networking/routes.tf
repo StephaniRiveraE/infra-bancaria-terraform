@@ -1,8 +1,3 @@
-# ============================================================================
-# ROUTING - Route Tables, NAT Gateway (condicional)
-# ============================================================================
-
-# NAT Gateway y EIP - SOLO cuando EKS está habilitado (ahorra ~$1-3/día)
 resource "aws_eip" "nat_eip" {
   count  = var.eks_enabled ? 1 : 0
   domain = "vpc"
@@ -18,7 +13,6 @@ resource "aws_nat_gateway" "nat" {
   depends_on = [aws_internet_gateway.igw]
 }
 
-# Route Table Pública - Siempre necesaria
 resource "aws_route_table" "public_rt" {
   vpc_id = aws_vpc.vpc_bancaria.id
 
@@ -30,11 +24,9 @@ resource "aws_route_table" "public_rt" {
   tags = merge(var.common_tags, { Name = "public-route-table" })
 }
 
-# Route Table Privada - La ruta NAT es condicional
 resource "aws_route_table" "private_rt" {
   vpc_id = aws_vpc.vpc_bancaria.id
 
-  # Solo agregar ruta a NAT si EKS está habilitado
   dynamic "route" {
     for_each = var.eks_enabled ? [1] : []
     content {

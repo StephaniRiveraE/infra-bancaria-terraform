@@ -17,9 +17,6 @@ output "dynamodb_table_names" {
   )
 }
 
-# ============================================================================
-# ELASTICACHE OUTPUTS (Solo si elasticache_enabled = true)
-# ============================================================================
 
 output "elasticache_enabled" {
   description = "Indica si ElastiCache está habilitado"

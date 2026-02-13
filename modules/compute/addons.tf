@@ -1,7 +1,3 @@
-# ============================================================================
-# EKS ADDONS - Componentes esenciales del clúster
-# CONDICIONAL: Solo se crean si eks_enabled = true
-# ============================================================================
 
 resource "aws_eks_addon" "vpc_cni" {
   count        = var.eks_enabled ? 1 : 0
