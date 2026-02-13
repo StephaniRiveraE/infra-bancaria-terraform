@@ -6,8 +6,9 @@ metadata:
 spec:
   serviceRef:
     name: switch-ms-nucleo
-    port: 8082
-  targetGroupARN: <ARN_TG_NUCLEO>
+    port: 80
+  targetGroupARN: arn:aws:elasticloadbalancing:us-east-2:851112555783:targetgroup/apim-tg-nucleo/912b9e06c127926b
+  targetType: ip
 ---
 apiVersion: elbv2.k8s.aws/v1beta1
 kind: TargetGroupBinding
@@ -17,8 +18,9 @@ metadata:
 spec:
   serviceRef:
     name: switch-ms-compensacion
-    port: 8084
-  targetGroupARN: <ARN_TG_COMPENSACION>
+    port: 80
+  targetGroupARN: arn:aws:elasticloadbalancing:us-east-2:851112555783:targetgroup/apim-tg-compensacion/7ecacd67a915b9b8
+  targetType: ip
 ---
 apiVersion: elbv2.k8s.aws/v1beta1
 kind: TargetGroupBinding
@@ -28,8 +30,9 @@ metadata:
 spec:
   serviceRef:
     name: switch-ms-contabilidad
-    port: 8080
-  targetGroupARN: <ARN_TG_CONTABILIDAD>
+    port: 80
+  targetGroupARN: arn:aws:elasticloadbalancing:us-east-2:851112555783:targetgroup/apim-tg-contabilidad/52c246cd7a1415a0
+  targetType: ip
 ---
 apiVersion: elbv2.k8s.aws/v1beta1
 kind: TargetGroupBinding
@@ -39,8 +42,9 @@ metadata:
 spec:
   serviceRef:
     name: switch-ms-devolucion
-    port: 8085
-  targetGroupARN: <ARN_TG_DEVOLUCION>
+    port: 80
+  targetGroupARN: arn:aws:elasticloadbalancing:us-east-2:851112555783:targetgroup/apim-tg-devolucion/db4bdad435878f3b
+  targetType: ip
 ---
 apiVersion: elbv2.k8s.aws/v1beta1
 kind: TargetGroupBinding
@@ -50,5 +54,6 @@ metadata:
 spec:
   serviceRef:
     name: switch-ms-directorio
-    port: 8081
-  targetGroupARN: <ARN_TG_DIRECTORIO>
+    port: 80
+  targetGroupARN: arn:aws:elasticloadbalancing:us-east-2:851112555783:targetgroup/apim-tg-directorio/24fb0cbc6f845f80
+  targetType: ip
