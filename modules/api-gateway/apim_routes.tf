@@ -179,7 +179,39 @@ resource "aws_lb_listener_rule" "route_funding" {
 
   condition {
     path_pattern {
-      values = ["/api/v2/switch/funding*"]
+      values = ["/api/v1/funding*"]
+    }
+  }
+}
+
+resource "aws_lb_listener_rule" "route_account_lookup" {
+  listener_arn = aws_lb_listener.apim_backend_listener.arn
+  priority     = 300
+
+  action {
+    type             = "forward"
+    target_group_arn = aws_lb_target_group.tg_nucleo.arn
+  }
+
+  condition {
+    path_pattern {
+      values = ["/api/v2/switch/account-lookup*"]
+    }
+  }
+}
+
+resource "aws_lb_listener_rule" "route_returns" {
+  listener_arn = aws_lb_listener.apim_backend_listener.arn
+  priority     = 400
+
+  action {
+    type             = "forward"
+    target_group_arn = aws_lb_target_group.tg_nucleo.arn
+  }
+
+  condition {
+    path_pattern {
+      values = ["/api/v2/switch/returns*"]
     }
   }
 }
@@ -241,7 +273,7 @@ resource "aws_apigatewayv2_integration" "integration_contabilidad" {
   payload_format_version = "1.0"
 
   request_parameters = {
-    "overwrite:path"                   = "$request.path"
+    "overwrite:path"                   = "/api/v1/funding"
     "overwrite:header.x-origin-secret" = var.internal_secret_value
   }
 
