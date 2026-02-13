@@ -9,6 +9,7 @@ resource "aws_cloudwatch_metric_alarm" "switch_rds_cpu" {
   namespace           = "AWS/RDS"
   period              = 300 
   threshold           = 50 
+  statistic           = "Average"
   alarm_description   = "CPU del RDS Switch supera 50% por 10 minutos"
   treat_missing_data  = "notBreaching"
 
