@@ -4,7 +4,20 @@ info:
   description: |
     API Gateway para la interacción entre Bancos y el Switch Transaccional.
     Maneja transferencias, consultas de cuentas, devoluciones y compensación.
-  version: 1.0.0
+
+    **Última actualización:** 2026-02-12
+
+    **Rutas principales:**
+    - `/api/v2/switch/*` - Nucleo (transferencias, account-lookup, returns)
+    - `/api/v1/funding/*` - Contabilidad (fondeo)
+    - `/api/v2/compensation/*` - Compensación
+    - `/api/v1/instituciones/*` - Directorio de bancos
+    - `/api/v1/transacciones/callback` - Callbacks de bancos
+
+    **Rutas de compatibilidad:**
+    - `/api/v2/transfers/health` → `/api/v2/switch/health`
+    - `/api/v1/red/bancos` → `/api/v1/instituciones`
+  version: 2.0.0
   contact:
     name: Equipo de Infraestructura
     email: soporte@digiconecu.com
@@ -113,12 +126,51 @@ components:
           type: string
           format: date-time
 
+    InstitutionDTO:
+      type: object
+      properties:
+        bic:
+          type: string
+          example: "ARCBECEGXXX"
+        nombre:
+          type: string
+          example: "ArcBank"
+        pais:
+          type: string
+          example: "EC"
+        cuentaTecnica:
+          type: object
+        interruptorCircuito:
+          type: object
+
+    CallbackRequest:
+      type: object
+      required:
+        - header
+        - body
+      properties:
+        header:
+          type: object
+          properties:
+            respondingBankId:
+              type: string
+              example: "ARCBECEGXXX"
+        body:
+          type: object
+          properties:
+            originalInstructionId:
+              type: string
+              example: "20230915123456789"
+            status:
+              type: string
+              example: "COMPLETED"
+              enum: [COMPLETED, REJECTED, PENDING]
+
 security:
   - CognitoAuth:
       - https://switch-api.com/transfers.write
 
 paths:
-
   # Microservicio Nucleo
 
   /api/v2/switch/transfers:
@@ -132,17 +184,17 @@ paths:
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/TransferRequest'
+              $ref: "#/components/schemas/TransferRequest"
       responses:
-        '201':
+        "201":
           description: Transferencia aceptada
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/TransferResponse'
-        '400':
+                $ref: "#/components/schemas/TransferResponse"
+        "400":
           description: Datos inválidos
-        '401':
+        "401":
           description: No autorizado
 
   /api/v2/switch/transfers/{instructionId}:
@@ -158,12 +210,12 @@ paths:
           schema:
             type: string
       responses:
-        '200':
+        "200":
           description: Estado de la transferencia
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/TransferResponse'
+                $ref: "#/components/schemas/TransferResponse"
 
   /api/v2/switch/account-lookup:
     post:
@@ -176,14 +228,14 @@ paths:
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/AccountLookupRequest'
+              $ref: "#/components/schemas/AccountLookupRequest"
       responses:
-        '200':
+        "200":
           description: Datos de la cuenta
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/AccountLookupResponse'
+                $ref: "#/components/schemas/AccountLookupResponse"
 
   /api/v2/switch/returns:
     post:
@@ -196,19 +248,30 @@ paths:
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/ReturnRequest'
+              $ref: "#/components/schemas/ReturnRequest"
       responses:
-        '202':
+        "202":
           description: Devolución aceptada par procesamiento
 
   /api/v2/switch/health:
     get:
       summary: Health Check - Ms Nucleo
-      security: [] 
+      security: []
       tags:
         - Health
       responses:
-        '200':
+        "200":
+          description: Servicio saludable
+
+  /api/v2/transfers/health:
+    get:
+      summary: Health Check - Alias de compatibilidad
+      description: Ruta alternativa que redirige a /api/v2/switch/health
+      security: []
+      tags:
+        - Health
+      responses:
+        "200":
           description: Servicio saludable
 
   # Microservicio Compensacion
@@ -229,31 +292,210 @@ paths:
                   type: string
                   format: binary
       responses:
-        '202':
+        "202":
           description: Archivo recibido
 
   /api/v2/compensation/health:
     get:
       summary: Health Check - Ms Compensacion
-      security: [] 
+      security: []
       tags:
         - Health
       responses:
-        '200':
+        "200":
           description: Servicio saludable
 
   # Microservicio Contabilidad
 
-  /api/v2/switch/funding:
+  /api/v1/funding/recharge:
     post:
-      summary: Consulta de Fondeo/Saldos
-      operationId: getFunding
+      summary: Recargar Fondos (Banco Central)
+      operationId: rechargeFunds
       tags:
         - Fondeo
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                bic:
+                  type: string
+                  example: "ARCBECEGXXX"
+                monto:
+                  type: number
+                  example: 100000.00
+                idInstruccion:
+                  type: string
+                  example: "RECARGA-001"
       responses:
-        '200':
-          description: Saldo actual
+        "200":
+          description: Recarga exitosa
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/FundingResponse'
+                type: object
+                properties:
+                  bic:
+                    type: string
+                  saldoActual:
+                    type: number
+                  ultimaRecarga:
+                    type: number
+
+  /api/v1/funding/available/{bic}/{monto}:
+    get:
+      summary: Verificar Disponibilidad de Fondos
+      operationId: checkFundingAvailability
+      tags:
+        - Fondeo
+      parameters:
+        - name: bic
+          in: path
+          required: true
+          schema:
+            type: string
+          example: "ARCBECEGXXX"
+        - name: monto
+          in: path
+          required: true
+          schema:
+            type: number
+          example: 5000.00
+      responses:
+        "200":
+          description: Estado de disponibilidad
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  bic:
+                    type: string
+                  disponible:
+                    type: boolean
+                  montoRequerido:
+                    type: number
+
+  # Microservicio Directorio
+
+  /api/v1/instituciones:
+    get:
+      summary: Listar todas las instituciones bancarias
+      operationId: listInstitutions
+      tags:
+        - Directorio
+      security: []
+      responses:
+        "200":
+          description: Lista de bancos participantes
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  type: object
+
+  /api/v1/red/bancos:
+    get:
+      summary: Listar bancos - Alias de compatibilidad
+      description: Ruta heredada que redirige a /api/v1/instituciones
+      operationId: listBanks
+      tags:
+        - Directorio
+      security: []
+      responses:
+        "200":
+          description: Lista de bancos participantes
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  type: object
+
+  /api/v1/instituciones/{bic}:
+    get:
+      summary: Obtener detalle de banco por BIC
+      operationId: getInstitutionByBic
+      tags:
+        - Directorio
+      security: []
+      parameters:
+        - name: bic
+          in: path
+          required: true
+          schema:
+            type: string
+          example: "ARCBECEGXXX"
+      responses:
+        "200":
+          description: Datos del banco
+          content:
+            application/json:
+              schema:
+                type: object
+
+  /api/v1/lookup/{bin}:
+    get:
+      summary: Descubrir banco destino por BIN (Routing)
+      operationId: lookupByBin
+      tags:
+        - Directorio
+      security: []
+      parameters:
+        - name: bin
+          in: path
+          required: true
+          schema:
+            type: string
+          example: "456789"
+      responses:
+        "200":
+          description: Banco identificado
+        "503":
+          description: Banco fuera de servicio (circuito abierto)
+
+  # Callbacks (Nucleo)
+
+  /api/v1/transacciones/callback:
+    post:
+      summary: Recibir callback de banco destino
+      description: Endpoint para que los bancos notifiquen resultado de procesamiento
+      operationId: receiveCallback
+      tags:
+        - Callbacks
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                header:
+                  type: object
+                  properties:
+                    respondingBankId:
+                      type: string
+                body:
+                  type: object
+                  properties:
+                    originalInstructionId:
+                      type: string
+                    status:
+                      type: string
+      responses:
+        "200":
+          description: Callback procesado
+
+  /api/v1/transacciones/callback/health:
+    get:
+      summary: Health check del callback endpoint
+      operationId: callbackHealth
+      tags:
+        - Health
+      security: []
+      responses:
+        "200":
+          description: Endpoint disponible
