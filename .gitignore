@@ -1,7 +1,25 @@
+# Terraform
 .terraform/
 .terraform.lock.hcl
-
 *.tfstate
 *.tfstate.backup
+*.tfvars
+terraform.tfplan
+
+# Logs
+*.log
+
+# Binarios
+*.exe
+
+# Archivos temporales de trabajo
+modify-tg.json
+tgs.json
+pods.txt
+pods_ips.txt
+updated_pods.txt
+
+# Carpetas corruptas o temporales
+c*UserschrisDocumentsUArquiParcial
 
 *.tfvars
