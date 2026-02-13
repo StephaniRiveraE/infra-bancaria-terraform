@@ -45,9 +45,9 @@ spec:
                   name: bantec-db-credentials
                   key: username
             - name: APIM_URL
-              value: "http://switch-ms-nucleo.switch.svc.cluster.local:8080/api/v2"
+              value: "http://switch-ms-nucleo.switch.svc.cluster.local/api/v2"
             - name: APIM_ENDPOINT 
-              value: "http://switch-ms-nucleo.switch.svc.cluster.local:8080/api/v2"
+              value: "http://switch-ms-nucleo.switch.svc.cluster.local/api/v2"
             - name: COGNITO_CLIENT_ID
               valueFrom:
                 secretKeyRef:
