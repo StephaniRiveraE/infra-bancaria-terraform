@@ -1,7 +1,4 @@
-﻿# Generado automaticamente - NO EDITAR MANUALMENTE
-# Microservicio: switch-ms-contabilidad
-# Namespace: switch
-apiVersion: apps/v1
+﻿apiVersion: apps/v1
 kind: Deployment
 metadata:
   name: switch-ms-contabilidad

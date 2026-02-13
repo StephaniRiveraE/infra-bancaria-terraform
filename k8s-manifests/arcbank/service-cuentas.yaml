@@ -1,6 +1,4 @@
-﻿# Microservicio: service-cuentas (PostgreSQL)
-# Namespace: arcbank | Puerto: 8081
-apiVersion: apps/v1
+﻿apiVersion: apps/v1
 kind: Deployment
 metadata:
   name: service-cuentas

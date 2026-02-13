@@ -1,11 +1,4 @@
-# ============================================================================
-# CONTAINER INSIGHTS - Métricas avanzadas de EKS para CloudWatch
-# Solo se activa si EKS está habilitado
-# Costo: ~$3-5/mes (incluido en CloudWatch)
-# ============================================================================
 
-# Addon de CloudWatch Observability para EKS
-# Proporciona: métricas de pods, logs, y Container Insights
 resource "aws_eks_addon" "cloudwatch_observability" {
   count = var.eks_enabled && var.enable_eks_container_insights ? 1 : 0
 

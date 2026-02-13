@@ -1,8 +1,4 @@
-# ============================================================================
-# WORKFLOW DE DEPLOY - switch-ms-nucleo
-# Copia este archivo a: .github/workflows/deploy-eks-nucleo.yml
-# en el repositorio de switch-ms-nucleo
-# ============================================================================
+
 name: "Deploy switch-ms-nucleo to EKS"
 
 on:

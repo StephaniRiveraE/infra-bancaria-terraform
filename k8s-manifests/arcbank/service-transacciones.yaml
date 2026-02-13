@@ -1,6 +1,4 @@
-﻿# Microservicio: service-transacciones (PostgreSQL)
-# Namespace: arcbank | Puerto: 8080
-apiVersion: apps/v1
+﻿apiVersion: apps/v1
 kind: Deployment
 metadata:
   name: service-transacciones

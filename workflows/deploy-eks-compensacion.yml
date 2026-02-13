@@ -1,8 +1,3 @@
-# ============================================================================
-# WORKFLOW DE DEPLOY - switch-ms-compensacion
-# Copia este archivo a: .github/workflows/deploy-eks-compensacion.yml
-# en el repositorio de switch-ms-compensacion
-# ============================================================================
 name: "Deploy switch-ms-compensacion to EKS"
 
 on:
