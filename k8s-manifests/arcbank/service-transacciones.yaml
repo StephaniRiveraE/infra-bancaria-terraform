@@ -33,7 +33,7 @@ spec:
               cpu: "500m"
           env:
             - name: JAVA_TOOL_OPTIONS
-              value: "-Djava.net.preferIPv4Stack=true"
+              value: "-Djava.net.preferIPv4Stack=true -Dcom.sun.net.ssl.checkRevocation=false -Djsse.enableSNIExtension=true"
             - name: SPRING_PROFILES_ACTIVE
               value: "prod"
             - name: SPRING_DATASOURCE_URL
@@ -52,9 +52,11 @@ spec:
                   name: arcbank-db-credentials
                   key: password
             - name: APIM_URL
-              value: "http://switch-ms-nucleo.switch.svc.cluster.local/api/v2"
+              value: "https://gf0js7uezg.execute-api.us-east-2.amazonaws.com/dev/api/v2"
             - name: APIM_ENDPOINT # For backward compatibility with some code versions
-              value: "http://switch-ms-nucleo.switch.svc.cluster.local/api/v2"
+              value: "https://gf0js7uezg.execute-api.us-east-2.amazonaws.com/dev/api/v2"
+            - name: APIM_BASE_URL
+              value: "https://gf0js7uezg.execute-api.us-east-2.amazonaws.com/dev/api/v2"
             - name: COGNITO_CLIENT_ID
               valueFrom:
                 secretKeyRef:
