@@ -184,39 +184,10 @@ resource "aws_lb_listener_rule" "route_funding" {
   }
 }
 
-# Regla: /api/v2/switch/returns* -> ms-devolucion
-resource "aws_lb_listener_rule" "route_devolucion" {
-  listener_arn = aws_lb_listener.apim_backend_listener.arn
-  priority     = 300
-
-  action {
-    type             = "forward"
-    target_group_arn = aws_lb_target_group.tg_devolucion.arn
-  }
-
-  condition {
-    path_pattern {
-      values = ["/api/v2/switch/returns*"]
-    }
-  }
-}
-
-# Regla: /api/v2/switch/account-lookup* -> ms-directorio
-resource "aws_lb_listener_rule" "route_directorio" {
-  listener_arn = aws_lb_listener.apim_backend_listener.arn
-  priority     = 400
-
-  action {
-    type             = "forward"
-    target_group_arn = aws_lb_target_group.tg_directorio.arn
-  }
-
-  condition {
-    path_pattern {
-      values = ["/api/v2/switch/account-lookup*"]
-    }
-  }
-}
+# ELIMINADAS: Las reglas ALB para devolucion (rule 300) y directorio (rule 400).
+# Motivo: returns y account-lookup ahora se procesan a traves del BFF en ms-nucleo,
+# que internamente invoca a ms-devolucion y ms-directorio via service discovery K8s.
+# Los Target Groups (tg_devolucion, tg_directorio) se mantienen como reserva.
 
 resource "aws_apigatewayv2_integration" "integration_nucleo" {
   api_id = aws_apigatewayv2_api.apim_gateway.id
@@ -229,6 +200,7 @@ resource "aws_apigatewayv2_integration" "integration_nucleo" {
   payload_format_version = "1.0"
 
   request_parameters = {
+    "overwrite:path"                   = "$request.path"
     "overwrite:header.x-origin-secret" = var.internal_secret_value
   }
 
@@ -249,7 +221,7 @@ resource "aws_apigatewayv2_integration" "integration_compensacion" {
   timeout_milliseconds   = 29000
 
   request_parameters = {
-    "overwrite:path"                   = "/api/v2/compensation/upload"
+    "overwrite:path"                   = "$request.path"
     "overwrite:header.x-origin-secret" = var.internal_secret_value
   }
 
@@ -269,7 +241,7 @@ resource "aws_apigatewayv2_integration" "integration_contabilidad" {
   payload_format_version = "1.0"
 
   request_parameters = {
-    "overwrite:path"                   = "/api/v2/switch/funding"
+    "overwrite:path"                   = "$request.path"
     "overwrite:header.x-origin-secret" = var.internal_secret_value
   }
 
@@ -287,6 +259,10 @@ resource "aws_apigatewayv2_integration" "integration_health" {
   integration_uri        = aws_lb_listener.apim_backend_listener.arn
   integration_method     = "GET"
   payload_format_version = "1.0"
+
+  request_parameters = {
+    "overwrite:path" = "$request.path"
+  }
 
   lifecycle {
     create_before_destroy = true
@@ -365,4 +341,46 @@ resource "aws_apigatewayv2_route" "health_compensation" {
   target    = "integrations/${aws_apigatewayv2_integration.integration_health.id}"
 
   authorization_type = "NONE"
+}
+
+# ─────────────────────────────────────────────────────────────────────
+# Rutas BFF Admin (ms-nucleo expone endpoints de administracion)
+# Nucleo actua como BFF: recibe la peticion y la delega internamente
+# a ms-directorio o ms-contabilidad via service discovery K8s.
+# ─────────────────────────────────────────────────────────────────────
+
+resource "aws_apigatewayv2_route" "admin_instituciones_get" {
+  api_id    = aws_apigatewayv2_api.apim_gateway.id
+  route_key = "GET /api/v2/switch/admin/instituciones"
+  target    = "integrations/${aws_apigatewayv2_integration.integration_nucleo.id}"
+
+  authorization_type = "JWT"
+  authorizer_id      = aws_apigatewayv2_authorizer.cognito_auth.id
+}
+
+resource "aws_apigatewayv2_route" "admin_instituciones_post" {
+  api_id    = aws_apigatewayv2_api.apim_gateway.id
+  route_key = "POST /api/v2/switch/admin/instituciones"
+  target    = "integrations/${aws_apigatewayv2_integration.integration_nucleo.id}"
+
+  authorization_type = "JWT"
+  authorizer_id      = aws_apigatewayv2_authorizer.cognito_auth.id
+}
+
+resource "aws_apigatewayv2_route" "admin_ledger_cuentas" {
+  api_id    = aws_apigatewayv2_api.apim_gateway.id
+  route_key = "POST /api/v2/switch/admin/ledger/cuentas"
+  target    = "integrations/${aws_apigatewayv2_integration.integration_nucleo.id}"
+
+  authorization_type = "JWT"
+  authorizer_id      = aws_apigatewayv2_authorizer.cognito_auth.id
+}
+
+resource "aws_apigatewayv2_route" "admin_funding_recharge" {
+  api_id    = aws_apigatewayv2_api.apim_gateway.id
+  route_key = "POST /api/v2/switch/admin/funding/recharge"
+  target    = "integrations/${aws_apigatewayv2_integration.integration_nucleo.id}"
+
+  authorization_type = "JWT"
+  authorizer_id      = aws_apigatewayv2_authorizer.cognito_auth.id
 }
