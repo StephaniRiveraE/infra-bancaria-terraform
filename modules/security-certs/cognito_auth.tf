@@ -1,4 +1,4 @@
-resource "random_password" "internal_secret" {
+﻿resource "random_password" "internal_secret" {
   length  = 32
   special = false
 }
@@ -43,6 +43,16 @@ resource "aws_cognito_resource_server" "switch_resource" {
 resource "aws_cognito_user_pool_client" "banco_clients" {
   for_each                     = toset(var.bancos)
   name                         = "${each.key}-System-Client"
+  user_pool_id                 = aws_cognito_user_pool.banca_pool.id
+  generate_secret              = true
+  allowed_oauth_flows          = ["client_credentials"]
+  allowed_oauth_scopes         = ["https://switch-api.com/transfers.write"]
+  supported_identity_providers = ["COGNITO"]
+  allowed_oauth_flows_user_pool_client = true
+}
+
+resource "aws_cognito_user_pool_client" "switch_admin_client" {
+  name                         = "switch-admin-client"
   user_pool_id                 = aws_cognito_user_pool.banca_pool.id
   generate_secret              = true
   allowed_oauth_flows          = ["client_credentials"]

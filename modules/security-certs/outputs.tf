@@ -1,5 +1,10 @@
 output "cognito_endpoint" { value = aws_cognito_user_pool.banca_pool.endpoint }
-output "cognito_client_ids" { value = [for k, v in aws_cognito_user_pool_client.banco_clients : v.id] }
+output "cognito_client_ids" { 
+  value = concat(
+    [for k, v in aws_cognito_user_pool_client.banco_clients : v.id],
+    [aws_cognito_user_pool_client.switch_admin_client.id]
+  ) 
+}
 output "internal_secret_value" {
   value     = random_password.internal_secret.result
   sensitive = true
