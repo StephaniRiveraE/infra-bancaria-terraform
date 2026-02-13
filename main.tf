@@ -145,3 +145,29 @@ module "api_gateway" {
 module "aws_credits" {
   source = "./aws_credits"
 }
+
+# ============================================================================
+# Import de rutas APIM creadas manualmente via AWS CLI (one-time sync)
+# Esto sincroniza el state de Terraform con los recursos existentes en AWS.
+# Una vez que terraform apply se ejecute exitosamente, estos bloques import
+# pueden ser removidos ya que los recursos quedarán en el state.
+# ============================================================================
+import {
+  to = module.api_gateway.aws_apigatewayv2_route.admin_instituciones_get
+  id = "gf0js7uezg/3yzndfi"
+}
+
+import {
+  to = module.api_gateway.aws_apigatewayv2_route.admin_instituciones_post
+  id = "gf0js7uezg/u5ehyrp"
+}
+
+import {
+  to = module.api_gateway.aws_apigatewayv2_route.admin_ledger_cuentas
+  id = "gf0js7uezg/a8s0not"
+}
+
+import {
+  to = module.api_gateway.aws_apigatewayv2_route.admin_funding_recharge
+  id = "gf0js7uezg/zocmfeh"
+}
