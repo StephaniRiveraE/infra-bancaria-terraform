@@ -19,6 +19,12 @@ info:
     - `POST /api/v2/switch/admin/ledger/cuentas` - Crear cuenta técnica
     - `POST /api/v2/switch/admin/funding/recharge` - Fondear cuenta
 
+    **Rutas Admin Compensación (via ms-compensacion):**
+    - `GET  /api/v2/compensation/ciclos` - Historial de ciclos
+    - `GET  /api/v2/compensation/ciclos/{cicloId}/posiciones` - Posiciones por ciclo
+    - `POST /api/v2/compensation/ciclos/{cicloId}/cierre` - Cierre/Settlement
+    - `GET  /api/v2/compensation/reporte/pdf/{cicloId}` - Reporte PDF
+
     **Rutas legacy (no desplegadas en APIM):**
     - `/api/v1/funding/*` - Contabilidad directa
     - `/api/v1/instituciones/*` - Directorio directo
@@ -423,6 +429,120 @@ paths:
       responses:
         "200":
           description: Servicio saludable
+
+  # Admin Compensación (Panel Administrativo)
+
+  /api/v2/compensation/ciclos:
+    get:
+      summary: Listar ciclos de compensación
+      operationId: listCompensationCycles
+      tags:
+        - Compensación Admin
+      security:
+        - CognitoAuth: []
+      responses:
+        "200":
+          description: Lista de ciclos operativos
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  type: object
+                  properties:
+                    idCiclo:
+                      type: integer
+                    estado:
+                      type: string
+                      enum: [ABIERTO, CERRADO, LIQUIDADO]
+                    fechaInicio:
+                      type: string
+                      format: date-time
+                    fechaCierre:
+                      type: string
+                      format: date-time
+
+  /api/v2/compensation/ciclos/{cicloId}/posiciones:
+    get:
+      summary: Detalle de posiciones por ciclo
+      operationId: getCyclePositions
+      tags:
+        - Compensación Admin
+      security:
+        - CognitoAuth: []
+      parameters:
+        - name: cicloId
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        "200":
+          description: Posiciones netas por banco participante
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  type: object
+                  properties:
+                    bic:
+                      type: string
+                    totalDebitos:
+                      type: number
+                    totalCreditos:
+                      type: number
+                    posicionNeta:
+                      type: number
+
+  /api/v2/compensation/ciclos/{cicloId}/cierre:
+    post:
+      summary: Ejecutar cierre de ciclo (Settlement)
+      operationId: closeCycle
+      tags:
+        - Compensación Admin
+      security:
+        - CognitoAuth: []
+      parameters:
+        - name: cicloId
+          in: path
+          required: true
+          schema:
+            type: integer
+        - name: proximoCicloEnMinutos
+          in: query
+          required: false
+          schema:
+            type: integer
+            default: 10
+      responses:
+        "200":
+          description: Ciclo cerrado y siguiente programado
+        "400":
+          description: Error en cierre de ciclo
+
+  /api/v2/compensation/reporte/pdf/{cicloId}:
+    get:
+      summary: Descargar reporte PDF de liquidación
+      operationId: downloadSettlementReport
+      tags:
+        - Compensación Admin
+      security:
+        - CognitoAuth: []
+      parameters:
+        - name: cicloId
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        "200":
+          description: Archivo PDF del reporte de liquidación
+          content:
+            application/pdf:
+              schema:
+                type: string
+                format: binary
 
   # Microservicio Contabilidad
 

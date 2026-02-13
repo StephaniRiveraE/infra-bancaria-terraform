@@ -384,3 +384,44 @@ resource "aws_apigatewayv2_route" "admin_funding_recharge" {
   authorization_type = "JWT"
   authorizer_id      = aws_apigatewayv2_authorizer.cognito_auth.id
 }
+
+# ─────────────────────────────────────────────────────────────────────
+# Rutas Admin Compensación (ms-compensacion expone endpoints de gestión)
+# Ciclos de compensación, posiciones, cierre (settlement) y reportes PDF.
+# ─────────────────────────────────────────────────────────────────────
+
+resource "aws_apigatewayv2_route" "compensation_ciclos" {
+  api_id    = aws_apigatewayv2_api.apim_gateway.id
+  route_key = "GET /api/v2/compensation/ciclos"
+  target    = "integrations/${aws_apigatewayv2_integration.integration_compensacion.id}"
+
+  authorization_type = "JWT"
+  authorizer_id      = aws_apigatewayv2_authorizer.cognito_auth.id
+}
+
+resource "aws_apigatewayv2_route" "compensation_ciclo_posiciones" {
+  api_id    = aws_apigatewayv2_api.apim_gateway.id
+  route_key = "GET /api/v2/compensation/ciclos/{cicloId}/posiciones"
+  target    = "integrations/${aws_apigatewayv2_integration.integration_compensacion.id}"
+
+  authorization_type = "JWT"
+  authorizer_id      = aws_apigatewayv2_authorizer.cognito_auth.id
+}
+
+resource "aws_apigatewayv2_route" "compensation_ciclo_cierre" {
+  api_id    = aws_apigatewayv2_api.apim_gateway.id
+  route_key = "POST /api/v2/compensation/ciclos/{cicloId}/cierre"
+  target    = "integrations/${aws_apigatewayv2_integration.integration_compensacion.id}"
+
+  authorization_type = "JWT"
+  authorizer_id      = aws_apigatewayv2_authorizer.cognito_auth.id
+}
+
+resource "aws_apigatewayv2_route" "compensation_reporte_pdf" {
+  api_id    = aws_apigatewayv2_api.apim_gateway.id
+  route_key = "GET /api/v2/compensation/reporte/pdf/{cicloId}"
+  target    = "integrations/${aws_apigatewayv2_integration.integration_compensacion.id}"
+
+  authorization_type = "JWT"
+  authorizer_id      = aws_apigatewayv2_authorizer.cognito_auth.id
+}
