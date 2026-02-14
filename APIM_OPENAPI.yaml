@@ -5,18 +5,30 @@ info:
     API Gateway para la interacción entre Bancos y el Switch Transaccional.
     Maneja transferencias, consultas de cuentas, devoluciones y compensación.
 
-    **Última actualización:** 2026-02-12
+    **Última actualización:** 2026-02-13
 
     **Rutas principales:**
     - `/api/v2/switch/*` - Nucleo (transferencias, account-lookup, returns)
-    - `/api/v1/funding/*` - Contabilidad (fondeo)
+    - `/api/v2/switch/funding` - Fondeo (proxy a Contabilidad)
+    - `/api/v2/switch/admin/*` - BFF Admin (proxy a Directorio/Contabilidad)
     - `/api/v2/compensation/*` - Compensación
-    - `/api/v1/instituciones/*` - Directorio de bancos
-    - `/api/v1/transacciones/callback` - Callbacks de bancos
 
-    **Rutas de compatibilidad:**
-    - `/api/v2/transfers/health` → `/api/v2/switch/health`
-    - `/api/v1/red/bancos` → `/api/v1/instituciones`
+    **Rutas BFF Administrativas (via Nucleo):**
+    - `GET  /api/v2/switch/admin/instituciones` - Listar bancos
+    - `POST /api/v2/switch/admin/instituciones` - Crear banco
+    - `POST /api/v2/switch/admin/ledger/cuentas` - Crear cuenta técnica
+    - `POST /api/v2/switch/admin/funding/recharge` - Fondear cuenta
+
+    **Rutas Admin Compensación (via ms-compensacion):**
+    - `GET  /api/v2/compensation/ciclos` - Historial de ciclos
+    - `GET  /api/v2/compensation/ciclos/{cicloId}/posiciones` - Posiciones por ciclo
+    - `POST /api/v2/compensation/ciclos/{cicloId}/cierre` - Cierre/Settlement
+    - `GET  /api/v2/compensation/reporte/pdf/{cicloId}` - Reporte PDF
+
+    **Rutas legacy (no desplegadas en APIM):**
+    - `/api/v1/funding/*` - Contabilidad directa
+    - `/api/v1/instituciones/*` - Directorio directo
+    - `/api/v1/transacciones/callback` - Callbacks de bancos
   version: 2.0.0
   contact:
     name: Equipo de Infraestructura
@@ -253,6 +265,34 @@ paths:
         "202":
           description: Devolución aceptada par procesamiento
 
+  /api/v2/switch/funding:
+    post:
+      summary: Fondear cuenta (proxy directo a Contabilidad)
+      operationId: fundAccount
+      tags:
+        - Fondeo
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                bic:
+                  type: string
+                  example: "ARCBANK"
+                monto:
+                  type: number
+                  example: 1000.00
+                idInstruccion:
+                  type: string
+                  format: uuid
+      responses:
+        "200":
+          description: Fondeo exitoso
+        "400":
+          description: Datos inválidos
+
   /api/v2/switch/health:
     get:
       summary: Health Check - Ms Nucleo
@@ -262,6 +302,91 @@ paths:
       responses:
         "200":
           description: Servicio saludable
+
+  # BFF Admin Endpoints (proxy via Nucleo)
+
+  /api/v2/switch/admin/instituciones:
+    get:
+      summary: Listar bancos (BFF Admin)
+      description: Proxy a ms-directorio para listar instituciones registradas
+      operationId: adminListInstitutions
+      tags:
+        - Admin BFF
+      responses:
+        "200":
+          description: Lista de bancos
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/InstitutionDTO"
+    post:
+      summary: Crear banco (BFF Admin)
+      description: Proxy a ms-directorio para registrar nueva institución
+      operationId: adminCreateInstitution
+      tags:
+        - Admin BFF
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/InstitutionDTO"
+      responses:
+        "200":
+          description: Banco creado
+
+  /api/v2/switch/admin/ledger/cuentas:
+    post:
+      summary: Crear cuenta técnica (BFF Admin)
+      description: Proxy a ms-contabilidad para inicializar cuentas de liquidación
+      operationId: adminCreateLedgerAccount
+      tags:
+        - Admin BFF
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                codigoBic:
+                  type: string
+                  example: "ARCBANK"
+                saldoInicial:
+                  type: number
+                  example: 50000.00
+      responses:
+        "200":
+          description: Cuenta técnica creada
+
+  /api/v2/switch/admin/funding/recharge:
+    post:
+      summary: Fondear cuenta (BFF Admin)
+      description: Proxy a ms-contabilidad para recargar saldo de un banco
+      operationId: adminFundRecharge
+      tags:
+        - Admin BFF
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                bic:
+                  type: string
+                  example: "ARCBANK"
+                monto:
+                  type: number
+                  example: 10000.00
+                idInstruccion:
+                  type: string
+                  format: uuid
+      responses:
+        "200":
+          description: Recarga exitosa
 
   /api/v2/transfers/health:
     get:
@@ -304,6 +429,120 @@ paths:
       responses:
         "200":
           description: Servicio saludable
+
+  # Admin Compensación (Panel Administrativo)
+
+  /api/v2/compensation/ciclos:
+    get:
+      summary: Listar ciclos de compensación
+      operationId: listCompensationCycles
+      tags:
+        - Compensación Admin
+      security:
+        - CognitoAuth: []
+      responses:
+        "200":
+          description: Lista de ciclos operativos
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  type: object
+                  properties:
+                    idCiclo:
+                      type: integer
+                    estado:
+                      type: string
+                      enum: [ABIERTO, CERRADO, LIQUIDADO]
+                    fechaInicio:
+                      type: string
+                      format: date-time
+                    fechaCierre:
+                      type: string
+                      format: date-time
+
+  /api/v2/compensation/ciclos/{cicloId}/posiciones:
+    get:
+      summary: Detalle de posiciones por ciclo
+      operationId: getCyclePositions
+      tags:
+        - Compensación Admin
+      security:
+        - CognitoAuth: []
+      parameters:
+        - name: cicloId
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        "200":
+          description: Posiciones netas por banco participante
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  type: object
+                  properties:
+                    bic:
+                      type: string
+                    totalDebitos:
+                      type: number
+                    totalCreditos:
+                      type: number
+                    posicionNeta:
+                      type: number
+
+  /api/v2/compensation/ciclos/{cicloId}/cierre:
+    post:
+      summary: Ejecutar cierre de ciclo (Settlement)
+      operationId: closeCycle
+      tags:
+        - Compensación Admin
+      security:
+        - CognitoAuth: []
+      parameters:
+        - name: cicloId
+          in: path
+          required: true
+          schema:
+            type: integer
+        - name: proximoCicloEnMinutos
+          in: query
+          required: false
+          schema:
+            type: integer
+            default: 10
+      responses:
+        "200":
+          description: Ciclo cerrado y siguiente programado
+        "400":
+          description: Error en cierre de ciclo
+
+  /api/v2/compensation/reporte/pdf/{cicloId}:
+    get:
+      summary: Descargar reporte PDF de liquidación
+      operationId: downloadSettlementReport
+      tags:
+        - Compensación Admin
+      security:
+        - CognitoAuth: []
+      parameters:
+        - name: cicloId
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        "200":
+          description: Archivo PDF del reporte de liquidación
+          content:
+            application/pdf:
+              schema:
+                type: string
+                format: binary
 
   # Microservicio Contabilidad
 

@@ -1,9 +1,3 @@
-# ============================================================================
-# WORKFLOW DE DEPLOY - arcbank-gateway-server (Spring Cloud Gateway)
-# Copia este archivo a: .github/workflows/deploy-eks-gateway.yml
-# en el repositorio de arcbank-gateway-server
-# NOTA: Este gateway se conectará al APIM de AWS en el futuro
-# ============================================================================
 name: "Deploy arcbank-gateway-server to EKS"
 
 on:

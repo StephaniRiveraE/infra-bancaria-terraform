@@ -1,7 +1,3 @@
-# ============================================================================
-# AWS LOAD BALANCER CONTROLLER - Ingress con ALB
-# CONDICIONAL: Solo se crea si eks_enabled = true
-# ============================================================================
 
 data "tls_certificate" "eks" {
   count = var.eks_enabled ? 1 : 0

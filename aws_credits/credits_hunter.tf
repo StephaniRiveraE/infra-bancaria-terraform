@@ -2,7 +2,6 @@ provider "aws" {
   region = "us-east-2"
 }
 
-# 1. Lanzamiento de una instancia mediante EC2
 data "aws_ami" "amazon_linux_2" {
   most_recent = true
   owners      = ["amazon"]
@@ -21,7 +20,6 @@ resource "aws_instance" "credit_instance" {
   }
 }
 
-# 2. Configuración de un presupuesto de costes con AWS Budgets
 resource "aws_budgets_budget" "credit_budget" {
   name              = "Monthly-Budget-Credits"
   budget_type       = "COST"

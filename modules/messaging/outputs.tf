@@ -1,8 +1,3 @@
-# ============================================================================
-# OUTPUTS - AMAZON MQ RABBITMQ
-# Información para compartir con los desarrolladores
-# ============================================================================
-
 output "rabbitmq_broker_id" {
   description = "ID del broker RabbitMQ"
   value       = aws_mq_broker.rabbitmq.id

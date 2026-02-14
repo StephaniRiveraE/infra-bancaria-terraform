@@ -1,8 +1,3 @@
-# ============================================================================
-# WORKFLOW DE DEPLOY - arcbank-service-sucursales (DynamoDB)
-# Copia este archivo a: .github/workflows/deploy-eks-sucursales.yml
-# en el repositorio de arcbank-service-sucursales
-# ============================================================================
 name: "Deploy arcbank-service-sucursales to EKS"
 
 on:

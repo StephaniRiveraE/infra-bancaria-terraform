@@ -43,10 +43,6 @@ variable "rds_security_group_id" {
   type        = string
 }
 
-# ============================================================================
-# ELASTICACHE VARIABLES
-# ============================================================================
-
 variable "elasticache_enabled" {
   description = "Habilitar/deshabilitar ElastiCache Redis (ahorro ~$50/mes cuando está apagado)"
   type        = bool

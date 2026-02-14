@@ -1,8 +1,3 @@
-# ============================================================================
-# OUTPUTS - Módulo Compute (EKS + Fargate)
-# CONDICIONAL: Retornan null cuando eks_enabled = false
-# ============================================================================
-
 output "eks_enabled" {
   description = "Indica si el stack de EKS está habilitado"
   value       = var.eks_enabled

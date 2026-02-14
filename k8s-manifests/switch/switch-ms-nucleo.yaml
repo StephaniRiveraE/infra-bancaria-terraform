@@ -1,7 +1,4 @@
-﻿# Generado automaticamente - NO EDITAR MANUALMENTE
-# Microservicio: switch-ms-nucleo
-# Namespace: switch
-apiVersion: apps/v1
+﻿apiVersion: apps/v1
 kind: Deployment
 metadata:
   name: switch-ms-nucleo
@@ -33,6 +30,8 @@ spec:
               memory: "1Gi"
               cpu: "500m"
           env:
+            - name: JAVA_TOOL_OPTIONS
+              value: "-Djava.net.preferIPv4Stack=true"
             - name: SPRING_PROFILES_ACTIVE
               value: "prod"
             - name: SPRING_DATASOURCE_URL
@@ -72,6 +71,22 @@ spec:
                 secretKeyRef:
                   name: rabbitmq-credentials
                   key: password
+            # URLs de servicios internos (service discovery K8s)
+            - name: SERVICE_DIRECTORIO_URL
+              value: "http://switch-ms-directorio"
+            - name: SERVICE_CONTABILIDAD_URL
+              value: "http://switch-ms-contabilidad"
+            - name: SERVICE_COMPENSACION_URL
+              value: "http://switch-ms-compensacion"
+            - name: SERVICE_DEVOLUCION_URL
+              value: "http://switch-ms-devolucion"
+            - name: APIM_SECURITY_ENABLED
+              value: "true"
+            - name: APIM_ORIGIN_SECRET
+              valueFrom:
+                secretKeyRef:
+                  name: apim-internal-secret
+                  key: APIM_ORIGIN_SECRET
           livenessProbe:
             httpGet:
               path: /actuator/health/liveness

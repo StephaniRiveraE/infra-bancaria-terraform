@@ -1,7 +1,4 @@
-﻿# Generado automaticamente - NO EDITAR MANUALMENTE
-# Microservicio: service-transacciones
-# Namespace: bantec
-apiVersion: apps/v1
+﻿apiVersion: apps/v1
 kind: Deployment
 metadata:
   name: service-transacciones
@@ -33,6 +30,8 @@ spec:
               memory: "1Gi"
               cpu: "500m"
           env:
+            - name: JAVA_TOOL_OPTIONS
+              value: "-Djava.net.preferIPv4Stack=true -Dcom.sun.net.ssl.checkRevocation=false -Djsse.enableSNIExtension=true"
             - name: SPRING_PROFILES_ACTIVE
               value: "prod"
             - name: SPRING_DATASOURCE_URL
@@ -46,9 +45,11 @@ spec:
                   name: bantec-db-credentials
                   key: username
             - name: APIM_URL
-              value: "http://switch-ms-nucleo.switch.svc.cluster.local:8080/api/v2"
-            - name: APIM_ENDPOINT # For backward compatibility
-              value: "http://switch-ms-nucleo.switch.svc.cluster.local:8080/api/v2"
+              value: "https://gf0js7uezg.execute-api.us-east-2.amazonaws.com/dev/api/v2"
+            - name: APIM_ENDPOINT 
+              value: "https://gf0js7uezg.execute-api.us-east-2.amazonaws.com/dev/api/v2"
+            - name: APIM_BASE_URL
+              value: "https://gf0js7uezg.execute-api.us-east-2.amazonaws.com/dev/api/v2"
             - name: COGNITO_CLIENT_ID
               valueFrom:
                 secretKeyRef:
@@ -59,6 +60,13 @@ spec:
                 secretKeyRef:
                   name: bantec-cognito-credentials
                   key: client-secret
+            - name: APIM_SECURITY_ENABLED
+              value: "true"
+            - name: APIM_ORIGIN_SECRET
+              valueFrom:
+                secretKeyRef:
+                  name: apim-internal-secret
+                  key: APIM_ORIGIN_SECRET
           livenessProbe:
             httpGet:
               path: /actuator/health/liveness

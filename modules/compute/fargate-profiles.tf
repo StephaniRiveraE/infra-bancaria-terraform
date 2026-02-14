@@ -1,8 +1,3 @@
-# ============================================================================
-# FARGATE PROFILES - Perfiles serverless para cada namespace
-# CONDICIONAL: Solo se crean si eks_enabled = true
-# ============================================================================
-
 locals {
   entity_namespaces = ["arcbank", "bantec", "nexus", "ecusol", "switch"]
 }
